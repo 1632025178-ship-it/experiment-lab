@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <title>SOP 双视图 - 抗菌实验系统</title>
+    <style>
+        :root {
+            --primary: #2E7D32;
+            --primary-light: #A5D6A7;
+            --bg: #F5F7FA;
+            --text: #263238;
+        }
+        * { box-sizing: border-box; margin:0; padding:0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",微软雅黑, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+        }
+        header {
+            background: white;
+            border-bottom: 1px solid #E0E0E0;
+            padding: 16px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        header h1 { font-size: 20px; color: var(--primary); }
+        nav a {
+            margin-left: 16px;
+            text-decoration: none;
+            color: var(--text);
+            padding: 6px 10px;
+            border-radius: 999px;
+        }
+        nav a:hover { background: var(--primary-light); color:white; }
+        main {
+            max-width: 900px;
+            margin: 24px auto;
+            padding: 16px;
+        }
+        .tabs { margin-bottom: 12px; }
+        .tabs button {
+            border:none;
+            padding:8px 14px;
+            border-radius:999px;
+            margin-right:8px;
+            cursor:pointer;
+            background:white;
+            border:1px solid #CFD8DC;
+        }
+        .tabs button.active {
+            background:var(--primary);
+            color:white;
+            border-color:var(--primary);
+        }
+        .view-tabs { margin:12px 0; }
+        .view-tabs button {
+            border:none;
+            padding:6px 12px;
+            border-radius:999px;
+            margin-right:6px;
+            cursor:pointer;
+            background:white;
+            border:1px solid #CFD8DC;
+            font-size:13px;
+        }
+        .view-tabs button.active {
+            background:#FFFFFF;
+            border-color:var(--primary);
+            color:var(--primary);
+        }
+        .card {
+            background:white;
+            border-radius:12px;
+            padding:16px;
+            box-shadow:0 2px 6px rgba(0,0,0,0.05);
+        }
+        ol { margin-left:20px; }
+        li { margin-bottom:6px; }
+        .tip {
+            background:#E3F2FD;
+            padding:8px 10px;
+            border-radius:8px;
+            font-size:13px;
+            margin-bottom:8px;
+        }
+        .detail-title {
+            font-weight:600;
+            margin-top:10px;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <h1>标准操作规程（SOP）</h1>
+    <nav>
+        <a href="index.html">首页</a>
+        <a href="schedule.html">实验排班</a>
+        <a href="layout.html">实验布局</a>
+        <a href="entry.html">数据录入</a>
+        <a href="sop.html">SOP</a>
+    </nav>
+</header>
+<main>
+    <div class="tabs">
+        <button id="tab-extraction" class="active" onclick="switchExp('extraction')">植物提取</button>
+        <button id="tab-zoi" onclick="switchExp('zoi')">抑菌圈 (ZOI)</button>
+        <button id="tab-mic" onclick="switchExp('mic')">96 孔 MIC</button>
+    </div>
+
+    <div class="view-tabs">
+        <button id="view-action" class="active" onclick="switchView('action')">操作视图</button>
+        <button id="view-tutorial" onclick="switchView('tutorial')">教程视图</button>
+    </div>
+
+    <div class="card" id="content"></div>
+</main>
+
+<script>
+    const SOP = {
+        extraction: {
+            title: "植物提取物制备",
+            action: [
+                "称取干燥植物粉末 10.0 g，置于 250 mL 锥形瓶中。",
+                "加入 200 mL 70% 乙醇（料液比 1:20），塞紧塞子。",
+                "55–70 ℃ 水浴浸提 40–90 min，中间定时轻摇。",
+                "粗滤（纱布）后经滤纸精滤，收集滤液。",
+                "45–50 ℃ 减压旋转蒸发至近干或粘稠。",
+                "用 30% 乙醇定容至 20 mL，贴标签，4 ℃ 避光保存。"
+            ],
+            tutorial: [
+                {h:"提取原理", t:"70% 乙醇兼具一定极性和非极性溶解能力，可同时萃取酚类、黄酮和部分挥发性成分。"},
+                {h:"温度控制", t:"温度过高会破坏热敏成分，过低则提取效率低。通常选择 55–70 ℃ 折中。"},
+                {h:"旋蒸意义", t:"在减压条件下降低沸点，快速去除溶剂，避免长期暴露在高温下导致活性成分降解。"}
+            ]
+        },
+        zoi: {
+            title:"琼脂打孔扩散法抑菌实验 (ZOI)",
+            action:[
+                "制备营养琼脂平板，约 20 mL/皿，室温凝固。",
+                "制备 0.5 McFarland 菌悬液。",
+                "取 100 µL 菌悬液涂布平板表面，均匀铺开。",
+                "使用无菌 6 mm 打孔器在平板上打 4 个孔，孔间距 ≥ 20 mm。",
+                "每孔加入 20 µL 植物提取液或对照液。",
+                "37 ℃（细菌）或 28 ℃（真菌）培养相应时间。",
+                "使用直尺或卡尺测量透明抑菌圈直径，记录 mm 值。"
+            ],
+            tutorial:[
+                {h:"打孔扩散原理", t:"药物从孔内向外扩散形成浓度梯度，菌在一定最低抑制浓度外才能生长，从而形成可见透明圈。"},
+                {h:"对照设置", t:"阴性对照（溶剂）用于排除溶剂本身影响，阳性对照（标准抗生素）用于判断菌株敏感性与实验是否成功。"},
+                {h:"影响因素", t:"菌悬液浓度、琼脂厚度、孔间距、药物扩散系数等都会影响抑菌圈大小，应尽量标准化。"}
+            ]
+        },
+        mic: {
+            title:"96 孔微量稀释法 MIC 测定",
+            action:[
+                "将植物提取液按 2 倍梯度在 96 孔板第 1–8 列配制 8 个浓度。",
+                "在每孔中加入等体积标准化菌悬液（通常最终体积 100–200 µL）。",
+                "第 9–12 列分别设置培养基空白、菌生长对照、溶剂对照和阳性药物对照。",
+                "封板，置合适温度孵育至对照孔生长明显。",
+                "肉眼观察或酶标仪测定 OD 值，判断最低完全抑制菌生长的浓度作为 MIC。"
+            ],
+            tutorial:[
+                {h:"MIC 概念", t:"最小抑菌浓度（MIC）定义为能抑制肉眼可见菌落生长的最低药物浓度，是定量评价抗菌活性的核心指标。"},
+                {h:"梯度设计", t:"通常使用 2 倍梯度（如 1、1/2、1/4…），既兼顾范围又节省孔数，可通过配液表统一配制。"},
+                {h:"结果判读", t:"可根据培养后孔内混浊度、沉淀情况或比色指示剂变色情况判断抑菌情况，也可结合 OD600 定量分析。"}
+            ]
+        }
+    };
+
+    let currentExp = "extraction";
+    let currentView = "action";
+
+    function switchExp(key){
+        currentExp = key;
+        document.getElementById("tab-extraction").classList.remove("active");
+        document.getElementById("tab-zoi").classList.remove("active");
+        document.getElementById("tab-mic").classList.remove("active");
+        document.getElementById("tab-"+key).classList.add("active");
+        renderContent();
+    }
+    function switchView(v){
+        currentView = v;
+        document.getElementById("view-action").classList.remove("active");
+        document.getElementById("view-tutorial").classList.remove("active");
+        document.getElementById("view-"+v).classList.add("active");
+        renderContent();
+    }
+
+    function renderContent(){
+        const box = document.getElementById("content");
+        const cfg = SOP[currentExp];
+        let html = `<h3>${cfg.title}</h3>`;
+        if(currentView === "action"){
+            html += `<div class="tip">操作视图：用于实验现场快速核对步骤，可按顺序执行。</div><ol>`;
+            cfg.action.forEach(step=>{ html+=`<li>${step}</li>`; });
+            html += "</ol>";
+        }else{
+            html += `<div class="tip">教程视图：包含原理说明与详细解释，适合学习与培训。</div>`;
+            cfg.tutorial.forEach(d=>{
+                html += `<div class="detail-title">${d.h}</div><div>${d.t}</div>`;
+            });
+        }
+        box.innerHTML = html;
+    }
+
+    renderContent();
+</script>
+</body>
+</html>

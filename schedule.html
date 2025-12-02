@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>实验排班管理</title>
+
+<style>
+body{
+    font-family: "Segoe UI","微软雅黑";
+    background:#F8FAF9;
+    margin:0;
+    padding:30px;
+    color:#222;
+}
+
+h1{color:#2E7D32;}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:10px;
+    background:white;
+    border-radius:10px;
+    overflow:hidden;
+}
+
+table th{
+    background:#2E7D32;
+    padding:12px;
+    color:white;
+    font-weight:600;
+}
+table td{
+    border-bottom:1px solid #ddd;
+    padding:12px;
+}
+
+.task-row:hover{
+    background:#E9F5EA;
+    cursor:pointer;
+}
+
+.btn{
+    padding:8px 12px;
+    border-radius:6px;
+    border:none;
+    color:white;
+    background:#2E7D32;
+    margin-right:4px;
+}
+.btn-edit{background:#0277BD;}
+.btn-danger{background:#C62828;}
+.btn-save{background:#558B2F;}
+
+.status-pill{
+    padding:4px 12px;
+    border-radius:14px;
+    color:white;
+    font-size:13px;
+}
+
+.input{
+    padding:6px 8px;
+    border:1px solid #ccc;
+    border-radius:6px;
+    margin:4px;
+}
+
+#formBox{
+    margin-top:25px;
+    background:white;
+    padding:12px;
+    border-radius:10px;
+    border:1px solid #bbb;
+}
+</style>
+</head>
+
+<body>
+
+<h1>🧪 抗菌实验排班管理系统</h1>
+
+<!-- 切换按钮 -->
+<div style="margin-bottom:20px;">
+    <button class="btn" onclick="showView('interactive')">交互排班模式</button>
+    <button class="btn" onclick="showView('overview')">周视图总览模式</button>
+</div>
+
+<!-- ====== 视图 A：交互式管理模式 ====== -->
+<div id="interactiveView">
+    <p>点击任务可切换状态：未开始 → 进行中 → 已完成</p>
+
+    <table>
+    <thead>
+    <tr>
+        <th>日期</th>
+        <th>时间</th>
+        <th>实验内容</th>
+        <th>状态</th>
+        <th>操作</th>
+    </tr>
+    </thead>
+    <tbody id="taskTable"></tbody>
+    </table>
+
+    <div id="formBox">
+    <h3>➕ 新增任务</h3>
+    日期：<input id="newDate" class="input">
+    时间：<input id="newTime" class="input">
+    内容：<input id="newTitle" class="input" style="width:240px">
+    依赖ID（可空）：<input id="newDep" class="input" style="width:60px">
+    <button class="btn" onclick="addTask()">添加任务</button>
+    </div>
+</div>
+
+<!-- ====== 视图 B：总览视图 ====== -->
+<div id="overviewView" style="display:none;">
+    <h3>📌 全部实验任务总览</h3>
+
+    <table>
+    <tr><th>周次</th><th>日期</th><th>时间段</th><th>实验内容</th></tr>
+
+    <tr><td rowspan="7">第 1 周</td><td>周三</td><td>14:00–18:30</td><td>4种菌株复苏 + 10种植物编号 + 启动烘干</td></tr>
+    <tr><td>周四</td><td>9:00–12:00</td><td>检查菌液状态、烘干进度</td></tr>
+    <tr><td>周四</td><td>14:00–17:00</td><td>首批植物研磨 + 乙醇浸提</td></tr>
+    <tr><td>周五</td><td>9:00–12:00</td><td>第二批植物浸提</td></tr>
+    <tr><td>周五</td><td>13:00–17:00</td><td>第一批样品旋蒸</td></tr>
+    <tr><td>周六</td><td>9:00–12:00</td><td>补充剩余萃取</td></tr>
+    <tr><td>周日</td><td>9:00–13:00</td><td>第二批旋蒸 + 定容</td></tr>
+
+    <tr><td rowspan="7">第 2 周</td><td>周一</td><td>9:00–12:00</td><td>菌液标准化 + 孢子制备</td></tr>
+    <tr><td>周一</td><td>14:00–17:00</td><td>检查植物提取液状态</td></tr>
+    <tr><td>周二</td><td>9:00–12:00</td><td>浇注抑菌圈平板</td></tr>
+    <tr><td>周三</td><td>14:00–18:30</td><td>抑菌圈布板 + MIC配置</td></tr>
+    <tr><td>周四</td><td>10:00–13:00</td><td>读取细菌抑菌圈</td></tr>
+    <tr><td>周五</td><td>9:00–12:00</td><td>真菌抑菌圈 + MIC剩余板</td></tr>
+    <tr><td>周日</td><td>13:00–17:00</td><td>读取 MIC 结果 + 整理</td></tr>
+    </table>
+</div>
+
+<script>
+function showView(view){
+    document.getElementById("interactiveView").style.display =
+        (view==="interactive")?"block":"none";
+
+    document.getElementById("overviewView").style.display =
+        (view==="overview")?"block":"none";
+}
+</script>
+
+<script>
+/* 这里保留你现有的排班 JS 即可，无需修改 */
+/* cycleStatus / render / addTask / delete / edit 等函数照常运行 */
+</script>
+
+</body>
+
+<script>
+let tasks = [
+    // 第 1 周
+    {id:1,date:"周三",time:"14:00–18:30",title:"4种菌株复苏 + 10种植物清洗编号",status:"pending"},
+    {id:2,date:"周四",time:"9:00–12:00",title:"检查菌液状态、烘干进度",status:"pending",dependency:1},
+    {id:3,date:"周四",time:"14:00–17:00",title:"首批植物研磨 + 乙醇浸提",status:"pending",dependency:2},
+    {id:4,date:"周五",time:"9:00–12:00",title:"第二批植物浸提",status:"pending",dependency:3},
+    {id:5,date:"周五",time:"13:00–17:00",title:"第一批旋蒸浓缩",status:"pending",dependency:4},
+    {id:6,date:"周六",time:"9:00–12:00",title:"补充剩余萃取",status:"pending",dependency:5},
+    {id:7,date:"周日",time:"9:00–13:00",title:"第二批旋蒸 + 定容30%EtOH",status:"pending",dependency:6},
+
+    // 第 2 周
+    {id:8,date:"周一",time:"9:00–12:00",title:"菌液标准化 + 孢子制备",status:"pending",dependency:7},
+    {id:9,date:"周一",time:"14:00–17:00",title:"检查植物提取液状态",status:"pending"},
+    {id:10,date:"周二",time:"9:00–12:00",title:"浇注抑菌圈平板（32块）",status:"pending",dependency:8},
+    {id:11,date:"周三",time:"14:00–18:30",title:"抑菌圈布板 + MIC配置",status:"pending",dependency:10},
+    {id:12,date:"周四",time:"10:00–13:00",title:"读取细菌抑菌圈",status:"pending",dependency:11},
+    {id:13,date:"周五",time:"9:00–12:00",title:"真菌抑菌圈 + MIC剩余板",status:"pending",dependency:12},
+    {id:14,date:"周日",time:"13:00–17:00",title:"读取全部MIC结果 + 整理",status:"pending",dependency:13},
+];
+
+let editing = null;
+
+function addTask(){
+    const d=newDate.value,t=newTime.value,c=newTitle.value;
+    const dep=parseInt(newDep.value);
+
+    if(!d||!t||!c){alert("请填写完整！");return;}
+
+    tasks.push({
+        id:Date.now(),
+        date:d,
+        time:t,
+        title:c,
+        status:"pending",
+        dependency:isNaN(dep)? null:dep
+    });
+
+    newDate.value=newTime.value=newTitle.value=newDep.value="";
+    render();
+}
+
+function removeTask(id){
+    tasks=tasks.filter(t=>t.id!==id);
+    render();
+}
+
+function cycleStatus(id){
+    let t=tasks.find(x=>x.id===id);
+    if(t.dependency){
+        let dep=tasks.find(x=>x.id===t.dependency);
+        if(dep.status!=="completed"){
+            alert("⚠ 必须先完成前置任务："+dep.title);
+            return;
+        }
+    }
+
+    if(t.status==="pending")t.status="doing";
+    else if(t.status==="doing")t.status="completed";
+    else t.status="pending";
+
+    render();
+}
+
+function editTask(id){editing=id;render();}
+
+function saveEdit(id){
+    let row=document.querySelector(`#row-${id}`);
+    let cells=row.querySelectorAll("input");
+    const [date,time,title,dep]=cells;
+
+    let t=tasks.find(x=>x.id===id);
+    t.date=date.value;
+    t.time=time.value;
+    t.title=title.value;
+    t.dependency=dep.value?parseInt(dep.value):null;
+
+    editing=null;
+    render();
+}
+
+function statusStyle(s){
+    if(s==="pending")return"background:gray";
+    if(s==="doing")return"background:#0277BD";
+    return"background:#2E7D32";
+}
+
+function showStatus(s){
+    if(s==="pending")return"未开始";
+    if(s==="doing")return"进行中";
+    return"已完成";
+}
+
+function render(){
+    document.getElementById("taskTable").innerHTML=
+    tasks.map(t=>{
+        if(editing===t.id){
+            return `
+            <tr id="row-${t.id}">
+            <td><input class="input" value="${t.date}"></td>
+            <td><input class="input" value="${t.time}"></td>
+            <td><input class="input" value="${t.title}" style="width:240px"></td>
+            <td><span class="status-pill" style="${statusStyle(t.status)}">${showStatus(t.status)}</span></td>
+            <td>
+                依赖：<input class="input" style="width:60px" value="${t.dependency||""}">
+                <button class="btn-save" onclick="saveEdit(${t.id})">保存</button>
+            </td>
+            </tr>`;
+        }
+
+        return `
+        <tr id="row-${t.id}" class="task-row">
+            <td>${t.date}</td>
+            <td>${t.time}</td>
+            <td onclick="cycleStatus(${t.id})">
+            ${t.title}
+            ${t.dependency?`<br><small style="color:#666">依赖#${t.dependency}</small>`:""}
+            </td>
+            <td><span class="status-pill" style="${statusStyle(t.status)}">${showStatus(t.status)}</span></td>
+            <td>
+                <button class="btn-edit" onclick="editTask(${t.id})">编辑</button>
+                <button class="btn-danger" onclick="removeTask(${t.id})">删除</button>
+            </td>
+        </tr>`;
+    }).join("");
+}
+
+render();
+</script>
+</body>
+</html>

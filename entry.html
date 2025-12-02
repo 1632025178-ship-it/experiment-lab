@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <title>数据录入 - 抗菌实验系统</title>
+    <style>
+        :root {
+            --primary: #2E7D32;
+            --primary-light: #A5D6A7;
+            --bg: #F5F7FA;
+            --text: #263238;
+        }
+        * { box-sizing: border-box; margin:0; padding:0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",微软雅黑, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+        }
+        header {
+            background: white;
+            border-bottom: 1px solid #E0E0E0;
+            padding: 16px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        header h1 { font-size: 20px; color: var(--primary); }
+        nav a {
+            margin-left: 16px;
+            text-decoration: none;
+            color: var(--text);
+            padding: 6px 10px;
+            border-radius: 999px;
+        }
+        nav a:hover { background: var(--primary-light); color:white; }
+        main {
+            max-width: 1100px;
+            margin: 24px auto;
+            padding: 16px;
+            display:grid;
+            grid-template-columns: 320px 1fr;
+            gap:16px;
+        }
+        .card {
+            background:white;
+            border-radius:12px;
+            padding:16px;
+            box-shadow:0 2px 6px rgba(0,0,0,0.05);
+        }
+        label { display:block; margin:8px 0 4px; font-size:13px; }
+        input,select {
+            width:100%;
+            padding:6px 8px;
+            border-radius:6px;
+            border:1px solid #CFD8DC;
+            font-size:13px;
+        }
+        .btn {
+            border:none;
+            background:var(--primary);
+            color:white;
+            padding:8px 14px;
+            border-radius:999px;
+            cursor:pointer;
+            width:100%;
+            margin-top:10px;
+        }
+        .btn:hover { background:#1B5E20; }
+        table {
+            width:100%;
+            border-collapse:collapse;
+            font-size:12px;
+        }
+        th,td {
+            border:1px solid #ECEFF1;
+            padding:6px 8px;
+            text-align:center;
+        }
+        th { background:#E8F5E9; }
+    </style>
+</head>
+<body>
+<header>
+    <h1>数据录入模块（ZOI / MIC）</h1>
+    <nav>
+        <a href="index.html">首页</a>
+        <a href="schedule.html">实验排班</a>
+        <a href="layout.html">实验布局</a>
+        <a href="entry.html">数据录入</a>
+        <a href="sop.html">SOP</a>
+    </nav>
+</header>
+<main>
+    <div class="card">
+        <h3>新记录录入</h3>
+        <label>实验方法</label>
+        <select id="method">
+            <option value="ZOI">抑菌圈直径 (mm)</option>
+            <option value="MIC">MIC 浓度 (%)</option>
+        </select>
+
+        <label>菌株</label>
+        <select id="strain"></select>
+
+        <label>植物提取物</label>
+        <select id="extract"></select>
+
+        <label>重复次数（R）</label>
+        <input type="number" id="replicate" min="1" max="5" value="1" />
+
+        <label>批次号</label>
+        <input type="text" id="batch" value="B001" />
+
+        <label id="valueLabel">抑菌圈直径 (mm)</label>
+        <input type="number" id="value" step="0.1" />
+
+        <button class="btn" onclick="addRecord()">保存记录</button>
+    </div>
+
+    <div class="card">
+        <h3>已录入记录</h3>
+        <table>
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>方法</th>
+                <th>菌株</th>
+                <th>提取物</th>
+                <th>重复</th>
+                <th>批次</th>
+                <th>数值</th>
+            </tr>
+            </thead>
+            <tbody id="dataBody"></tbody>
+        </table>
+    </div>
+</main>
+
+<script>
+    const extracts = [
+        "P1 柑橘果皮","P2 石榴皮","P3 苹果皮","P4 香蕉皮",
+        "P5 枇杷叶","P6 菊花/金银花","P7 绿茶","P8 薄荷",
+        "P9 迷迭香","P10 芦荟"
+    ];
+    const strains = ["EC","BS","AS","PS"];
+
+    const data = [];
+
+    function initForm(){
+        const sSel = document.getElementById("strain");
+        const eSel = document.getElementById("extract");
+        strains.forEach(s=>{
+            const o = document.createElement("option");
+            o.value = s; o.textContent = s;
+            sSel.appendChild(o);
+        });
+        extracts.forEach(p=>{
+            const o = document.createElement("option");
+            o.value = p; o.textContent = p;
+            eSel.appendChild(o);
+        });
+
+        document.getElementById("method").addEventListener("change", e=>{
+            const m = e.target.value;
+            const lab = document.getElementById("valueLabel");
+            if(m === "ZOI") lab.textContent = "抑菌圈直径 (mm)";
+            else lab.textContent = "MIC 浓度 (%)";
+        });
+    }
+
+    function addRecord(){
+        const method = document.getElementById("method").value;
+        const strain = document.getElementById("strain").value;
+        const extract = document.getElementById("extract").value;
+        const replicate = parseInt(document.getElementById("replicate").value,10);
+        const batch = document.getElementById("batch").value;
+        const value = parseFloat(document.getElementById("value").value);
+
+        if(isNaN(value)){
+            alert("请填写数值。");
+            return;
+        }
+        if(method === "ZOI" && (value<0 || value>100)){
+            alert("抑菌圈直径范围异常，请确认。");
+            return;
+        }
+
+        data.push({
+            id: Date.now(),
+            method, strain, extract, replicate, batch, value
+        });
+        renderTable();
+        document.getElementById("value").value = "";
+    }
+
+    function renderTable(){
+        const tbody = document.getElementById("dataBody");
+        tbody.innerHTML = "";
+        data.slice().reverse().forEach(row=>{
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td>${row.id}</td>
+                <td>${row.method}</td>
+                <td>${row.strain}</td>
+                <td>${row.extract}</td>
+                <td>R${row.replicate}</td>
+                <td>${row.batch}</td>
+                <td>${row.value}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    initForm();
+</script>
+</body>
+</html>

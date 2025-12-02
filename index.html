@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <title>抗菌实验管理系统 V2.0 - 首页</title>
+    <style>
+        :root {
+            --primary: #2E7D32;
+            --primary-light: #A5D6A7;
+            --bg: #F5F7FA;
+            --text: #263238;
+        }
+        * { box-sizing: border-box; margin:0; padding:0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",微软雅黑, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+        }
+        header {
+            background: white;
+            border-bottom: 1px solid #E0E0E0;
+            padding: 16px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        header h1 {
+            font-size: 20px;
+            color: var(--primary);
+        }
+        nav a {
+            margin-left: 16px;
+            text-decoration: none;
+            color: var(--text);
+            padding: 6px 10px;
+            border-radius: 999px;
+        }
+        nav a:hover {
+            background: var(--primary-light);
+            color: white;
+        }
+        main {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 24px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.04);
+        }
+        h2 {
+            margin-bottom: 16px;
+            font-size: 18px;
+        }
+        p { margin-bottom: 10px; line-height: 1.6; }
+        ul { margin: 8px 0 16px 20px; }
+        li { margin-bottom: 4px; }
+        .tag {
+            display: inline-block;
+            padding: 3px 8px;
+            font-size: 12px;
+            border-radius: 999px;
+            background: #E8F5E9;
+            color: #1B5E20;
+            margin-right: 6px;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <h1>可交互式抗菌活性实验记录与排版分析系统 V2.0</h1>
+    <nav>
+        <a href="schedule.html">实验排班</a>
+        <a href="layout.html">实验布局</a>
+        <a href="entry.html">数据录入</a>
+        <a href="sop.html">SOP</a>
+    </nav>
+</header>
+<main>
+    <h2>系统概览</h2>
+    <p>
+        本系统用于管理“不同植物天然提取物的抗菌活性比较及其特征研究”实验的全流程，
+        从<strong>排班计划</strong>、<strong>抑菌圈平板排孔</strong>、<strong>96 孔板 MIC 布局</strong>、
+        <strong>自动配液表</strong>到<strong>数据录入与 SOP 参考</strong>。
+    </p>
+
+    <p>
+        当前已实现模块：
+    </p>
+    <ul>
+        <li><span class="tag">A</span>实验排班与进度管理（不区分人员，自由分工模式）</li>
+        <li><span class="tag">B</span>抑菌圈打孔布局 &amp; 96 孔板 MIC 标准布局（10 植物 × 4 菌 × 3 重复）</li>
+        <li><span class="tag">C</span>统一数据录入表单（支持 ZOI / MIC）</li>
+        <li><span class="tag">E</span>SOP 双视图：操作视图 &amp; 教程视图</li>
+        <li><span class="tag">+</span>MIC 自动配液表（2 倍梯度，自动计算体积）</li>
+    </ul>
+
+    <p>请从顶部导航进入各模块开始使用。</p>
+</main>
+</body>
+</html>

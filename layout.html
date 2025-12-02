@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <title>实验布局设计 - 抗菌实验系统</title>
+    <style>
+        :root {
+            --primary: #2E7D32;
+            --primary-light: #A5D6A7;
+            --bg: #F5F7FA;
+            --text: #263238;
+        }
+        * { box-sizing: border-box; margin:0; padding:0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",微软雅黑, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+        }
+        header {
+            background: white;
+            border-bottom: 1px solid #E0E0E0;
+            padding: 16px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        header h1 { font-size: 20px; color: var(--primary); }
+        nav a {
+            margin-left: 16px;
+            text-decoration: none;
+            color: var(--text);
+            padding: 6px 10px;
+            border-radius: 999px;
+        }
+        nav a:hover { background: var(--primary-light); color:white; }
+        main {
+            max-width: 1200px;
+            margin: 24px auto;
+            padding: 16px;
+        }
+        .toolbar { margin-bottom: 16px; display:flex; gap:8px; flex-wrap:wrap; }
+        .btn {
+            border:none; cursor:pointer;
+            padding:8px 14px;
+            border-radius:999px;
+            background:white;
+            color:var(--primary);
+            border:1px solid var(--primary-light);
+        }
+        .btn:hover { background:var(--primary-light); color:white; }
+        .section-title {
+            margin:16px 0 8px;
+            font-size: 18px;
+            font-weight:600;
+        }
+        .card {
+            background:white;
+            border-radius:12px;
+            padding:12px;
+            box-shadow:0 2px 6px rgba(0,0,0,0.05);
+            margin:6px;
+        }
+        .plate {
+            width:200px;height:200px;
+            margin:8px auto;
+            border-radius:50%;
+            border:2px solid var(--primary);
+            position:relative;
+            background:white;
+        }
+        .hole {
+            width:52px;height:52px;
+            border-radius:50%;
+            border:2px dashed #66BB6A;
+            background:#F1F8E9;
+            position:absolute;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            text-align:center;
+            font-size:11px;
+            line-height:1.2;
+            padding:4px;
+        }
+        .mic-table {
+            border-collapse:collapse;
+            width:100%;
+            font-size:12px;
+        }
+        .mic-table th, .mic-table td {
+            border:1px solid #CFD8DC;
+            padding:4px 6px;
+            text-align:center;
+        }
+        .mic-table th {
+            background:#E8F5E9;
+        }
+        .mic-grad { background:#E3F2FD; }
+        .mic-ctrl { background:#FFF8E1; }
+        .mic-dilution { margin-top:16px; overflow-x:auto; }
+    </style>
+</head>
+<body>
+<header>
+    <h1>实验布局设计（抑菌圈 & MIC）</h1>
+    <nav>
+        <a href="index.html">首页</a>
+        <a href="schedule.html">实验排班</a>
+        <a href="layout.html">实验布局</a>
+        <a href="entry.html">数据录入</a>
+        <a href="sop.html">SOP</a>
+    </nav>
+</header>
+<main>
+    <div class="toolbar">
+        <button class="btn" onclick="renderZOILayout()">生成抑菌圈平板布局（10 植物 × 4 菌 × 3 重复）</button>
+        <button class="btn" onclick="renderMICLayout()">生成 96 孔 MIC 布局</button>
+        <button class="btn" onclick="renderMICDilutionTable()">生成 MIC 自动配液表</button>
+    </div>
+
+    <h2 class="section-title">布局预览</h2>
+    <div id="layoutContainer"></div>
+
+    <h2 class="section-title">MIC 配液表</h2>
+    <div id="dilutionContainer" class="mic-dilution"></div>
+</main>
+
+<script>
+    // 10 种植物 & 4 菌株
+    const extracts = [
+        "P1 柑橘果皮","P2 石榴皮","P3 苹果皮","P4 香蕉皮",
+        "P5 枇杷叶","P6 菊花/金银花","P7 绿茶","P8 薄荷",
+        "P9 迷迭香","P10 芦荟"
+    ];
+    const strains = ["EC","BS","AS","PS"];
+
+    // ---------- 抑菌圈布局 ----------
+    function renderZOILayout(){
+        const box = document.getElementById("layoutContainer");
+        box.innerHTML = "";
+        strains.forEach(strain=>{
+            const title = document.createElement("h3");
+            title.textContent = strain + " 抑菌圈布局（8 块板）";
+            title.style.margin = "16px 0 8px";
+            box.appendChild(title);
+
+            const plates = generateZoiForStrain(strain);
+            plates.forEach(p => box.appendChild(p));
+        });
+    }
+
+    function generateZoiForStrain(strain){
+        const plates = [];
+        // 生成 R1 / R2 / R3 标签
+        const R1 = extracts.map(p=>p+"-R1");
+        const R2 = extracts.map(p=>p+"-R2");
+        const R3 = extracts.map(p=>p+"-R3");
+
+        // 你的黄金布局模板：8 块板 × 4 孔
+        const plan = [
+            [R1[0],R1[1],R1[2],R1[3]],
+            [R1[4],R1[5],R1[6],R1[7]],
+            [R1[8],R1[9],R2[0],R2[1]],
+            [R2[2],R2[3],R2[4],R2[5]],
+            [R2[6],R2[7],R2[8],R2[9]],
+            [R3[0],R3[1],R3[2],R3[3]],
+            [R3[4],R3[5],R3[6],R3[7]],
+            [R3[8],R3[9],"阴性对照","阳性对照"]
+        ];
+
+        const pos = ["top","bottom","left","right"];
+
+        plan.forEach((holes, idx)=>{
+            const plateName = strain + "-" + (idx+1);
+            plates.push(renderZoiPlate(plateName, strain, idx, holes, pos));
+        });
+        return plates;
+    }
+
+    function renderZoiPlate(plateName, strain, plateIndex, holes, pos){
+        const card = document.createElement("div");
+        card.className = "card";
+        card.style.display = "inline-block";
+
+        let inner = `<h4>${plateName}</h4><div class="plate">`;
+        for(let i=0;i<4;i++){
+            const wellId = `${strain}-${plateIndex+1}_C${i+1}`;
+            inner += holeHtml(`${wellId}<br>${holes[i]}`, pos[i]);
+        }
+        inner += "</div>";
+        card.innerHTML = inner;
+        return card;
+    }
+
+    function holeHtml(label,pos){
+        const map = {
+            top:"top:6px;left:50%;transform:translateX(-50%);",
+            bottom:"bottom:6px;left:50%;transform:translateX(-50%);",
+            left:"left:6px;top:50%;transform:translateY(-50%);",
+            right:"right:6px;top:50%;transform:translateY(-50%);"
+        };
+        return `<div class="hole" style="${map[pos]}">${label}</div>`;
+    }
+
+    // ---------- MIC 布局 ----------
+    function renderMICLayout(){
+        const box = document.getElementById("layoutContainer");
+        box.innerHTML = "";
+        strains.forEach(strain=>{
+            const title = document.createElement("h3");
+            title.textContent = strain + " MIC 布局（2 块板）";
+            title.style.margin = "16px 0 8px";
+            box.appendChild(title);
+
+            box.appendChild(createMICPlate(strain+"-MIC-1", extracts.slice(0,5)));
+            box.appendChild(createMICPlate(strain+"-MIC-2", extracts.slice(5,10)));
+        });
+    }
+
+    function createMICPlate(name, plants){
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `<h4>${name}</h4>` + micTableHtml(plants);
+        return card;
+    }
+
+    function micTableHtml(plants){
+        const rows = ["A","B","C","D","E"];
+        let html = `<table class="mic-table">
+            <tr>
+                <th>行\\列</th>
+                <th>1</th><th>2</th><th>3</th><th>4</th>
+                <th>5</th><th>6</th><th>7</th><th>8</th>
+                <th>9</th><th>10</th><th>11</th><th>12</th>
+            </tr>`;
+
+        rows.forEach((r,i)=>{
+            html += `<tr><td>${r}</td>`;
+            for(let c=1;c<=12;c++){
+                if(c<=8){
+                    html += `<td class="mic-grad">${plants[i]}</td>`;
+                }else if(c===9){
+                    html += `<td class="mic-ctrl">MB 空白</td>`;
+                }else if(c===10){
+                    html += `<td class="mic-ctrl">GC 生长对照</td>`;
+                }else if(c===11){
+                    html += `<td class="mic-ctrl">SC 溶剂对照</td>`;
+                }else{
+                    html += `<td class="mic-ctrl">PC 药物对照</td>`;
+                }
+            }
+            html += "</tr>";
+        });
+
+        html += "</table>";
+        return html;
+    }
+
+    // ---------- MIC 自动配液表（2 倍梯度，默认 200µL） ----------
+    function renderMICDilutionTable(totalVol = 200){
+        const box = document.getElementById("dilutionContainer");
+        let html = `<table class="mic-table">
+            <tr>
+                <th>植物</th>
+                <th>C1</th><th>C2</th><th>C3</th><th>C4</th>
+                <th>C5</th><th>C6</th><th>C7</th><th>C8</th>
+            </tr>`;
+
+        extracts.forEach(p=>{
+            html += `<tr><td>${p}</td>`;
+            for(let i=0;i<8;i++){
+                const factor = 1 / Math.pow(2,i); // 1,1/2,...1/128
+                const stock = Math.round(totalVol * factor);
+                const medium = totalVol - stock;
+                html += `<td>${stock}µL 提取液 + ${medium}µL 培养基</td>`;
+            }
+            html += `</tr>`;
+        });
+
+        html += "</table>";
+        box.innerHTML = html;
+    }
+</script>
+</body>
+</html>
