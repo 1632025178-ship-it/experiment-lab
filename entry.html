@@ -1,34 +1,12 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-    <div class="export-buttons">
-    <button onclick="exportZOI()" class="export-btn">📤 导出 ZOI 模板</button>
-    <button onclick="exportMIC()" class="export-btn">📤 导出 MIC 模板</button>
-    <button onclick="exportSchedule()" class="export-btn">📤 导出排班模板</button>
-</div>
-
-<style>
-.export-buttons {
-    margin: 20px 0;
-    display: flex;
-    gap: 12px;
-}
-.export-btn {
-    padding: 10px 14px;
-    background: #10b981;
-    border: none;
-    color: white;
-    border-radius: 8px;
-    font-size: 14px;
-    cursor: pointer;
-}
-.export-btn:hover {
-    background: #059669;
-}
-</style>
-
 <head>
     <meta charset="UTF-8" />
     <title>数据录入 - 抗菌实验系统</title>
+
+    <!-- Excel 导出库 -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
     <style>
         :root {
             --primary: #2E7D32;
@@ -38,7 +16,7 @@
         }
         * { box-sizing: border-box; margin:0; padding:0; }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",微软雅黑, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", 微软雅黑, sans-serif;
             background: var(--bg);
             color: var(--text);
         }
@@ -50,7 +28,6 @@
             justify-content: space-between;
             align-items: center;
         }
-        header h1 { font-size: 20px; color: var(--primary); }
         nav a {
             margin-left: 16px;
             text-decoration: none;
@@ -103,9 +80,34 @@
             text-align:center;
         }
         th { background:#E8F5E9; }
+
+        .export-buttons {
+            margin: 20px;
+            display: flex;
+            gap: 12px;
+        }
+        .export-btn {
+            padding: 10px 14px;
+            background: #10b981;
+            border: none;
+            color: white;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        .export-btn:hover { background:#059669; }
     </style>
 </head>
+
 <body>
+
+<!-- 导出按钮 -->
+<div class="export-buttons">
+    <button onclick="exportZOI()" class="export-btn">📤 导出 ZOI 模板</button>
+    <button onclick="exportMIC()" class="export-btn">📤 导出 MIC 模板</button>
+    <button onclick="exportSchedule()" class="export-btn">📤 导出排班模板</button>
+</div>
+
 <header>
     <h1>数据录入模块（ZOI / MIC）</h1>
     <nav>
@@ -116,6 +118,7 @@
         <a href="sop.html">SOP</a>
     </nav>
 </header>
+
 <main>
     <div class="card">
         <h3>新记录录入</h3>
@@ -163,82 +166,101 @@
 </main>
 
 <script>
-    const extracts = [
-        "P1 柑橘果皮","P2 石榴皮","P3 苹果皮","P4 香蕉皮",
-        "P5 枇杷叶","P6 菊花/金银花","P7 绿茶","P8 薄荷",
-        "P9 迷迭香","P10 芦荟"
-    ];
-    const strains = ["EC","BS","AS","PS"];
+// ================= Excel 导出器 ================= //
+function exportZOI() {
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet([
+        ["RecordID", "Date", "Strain", "Plant", "Replicate", "Diameter_mm", "Photo_Path"],
+        ["ZOI001", "", "EC / BS / AS / PS", "P1-P10", "R1/R2/R3", "", ""]
+    ]);
+    XLSX.utils.book_append_sheet(wb, ws, "ZOI");
+    XLSX.writeFile(wb, "zoi_template.xlsx");
+}
 
-    const data = [];
+function exportMIC() {
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet([
+        ["RecordID", "Date", "Strain", "Plant", "Row", "Col", "Conc(%)", "OD600", "Status", "Photo_Path"],
+        ["MIC001", "", "EC / BS / AS / PS", "P1-P10", "A-H", "1-12", "100 → 0.78", "", "", ""]
+    ]);
+    XLSX.utils.book_append_sheet(wb, ws, "MIC");
+    XLSX.writeFile(wb, "mic_template.xlsx");
+}
 
-    function initForm(){
-        const sSel = document.getElementById("strain");
-        const eSel = document.getElementById("extract");
-        strains.forEach(s=>{
-            const o = document.createElement("option");
-            o.value = s; o.textContent = s;
-            sSel.appendChild(o);
-        });
-        extracts.forEach(p=>{
-            const o = document.createElement("option");
-            o.value = p; o.textContent = p;
-            eSel.appendChild(o);
-        });
+function exportSchedule() {
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet([
+        ["TaskID", "Date", "Time", "Content", "Status", "Note", "Screenshot"],
+        ["S001", "", "09:00-12:00", "", "未开始 / 进行中 / 已完成", "", ""]
+    ]);
+    XLSX.utils.book_append_sheet(wb, ws, "Schedule");
+    XLSX.writeFile(wb, "schedule_template.xlsx");
+}
 
-        document.getElementById("method").addEventListener("change", e=>{
-            const m = e.target.value;
-            const lab = document.getElementById("valueLabel");
-            if(m === "ZOI") lab.textContent = "抑菌圈直径 (mm)";
-            else lab.textContent = "MIC 浓度 (%)";
-        });
-    }
+// ================= 数据录入逻辑 ================= //
+const extracts = [
+    "P1 柑橘果皮","P2 石榴皮","P3 苹果皮","P4 香蕉皮",
+    "P5 枇杷叶","P6 菊花/金银花","P7 绿茶","P8 薄荷",
+    "P9 迷迭香","P10 芦荟"
+];
+const strains = ["EC","BS","AS","PS"];
 
-    function addRecord(){
-        const method = document.getElementById("method").value;
-        const strain = document.getElementById("strain").value;
-        const extract = document.getElementById("extract").value;
-        const replicate = parseInt(document.getElementById("replicate").value,10);
-        const batch = document.getElementById("batch").value;
-        const value = parseFloat(document.getElementById("value").value);
+const data = [];
 
-        if(isNaN(value)){
-            alert("请填写数值。");
-            return;
-        }
-        if(method === "ZOI" && (value<0 || value>100)){
-            alert("抑菌圈直径范围异常，请确认。");
-            return;
-        }
+function initForm(){
+    const s = document.getElementById("strain");
+    const e = document.getElementById("extract");
 
-        data.push({
-            id: Date.now(),
-            method, strain, extract, replicate, batch, value
-        });
-        renderTable();
-        document.getElementById("value").value = "";
-    }
+    strains.forEach(v=>{
+        const o=document.createElement("option");
+        o.value=v; o.textContent=v; s.appendChild(o);
+    });
+    extracts.forEach(v=>{
+        const o=document.createElement("option");
+        o.value=v; o.textContent=v; e.appendChild(o);
+    });
 
-    function renderTable(){
-        const tbody = document.getElementById("dataBody");
-        tbody.innerHTML = "";
-        data.slice().reverse().forEach(row=>{
-            const tr = document.createElement("tr");
-            tr.innerHTML = `
-                <td>${row.id}</td>
-                <td>${row.method}</td>
-                <td>${row.strain}</td>
-                <td>${row.extract}</td>
-                <td>R${row.replicate}</td>
-                <td>${row.batch}</td>
-                <td>${row.value}</td>
-            `;
-            tbody.appendChild(tr);
-        });
-    }
+    document.getElementById("method").addEventListener("change", e=>{
+        document.getElementById("valueLabel").textContent =
+            e.target.value==="ZOI"?"抑菌圈直径 (mm)":"MIC 浓度 (%)";
+    });
+}
 
-    initForm();
+function addRecord(){
+    const r={
+        id: Date.now(),
+        method: method.value,
+        strain: strain.value,
+        extract: extract.value,
+        replicate: replicate.value,
+        batch: batch.value,
+        value: parseFloat(value.value)
+    };
+    if(isNaN(r.value)){ alert("请输入数值"); return; }
+    data.push(r);
+    renderTable();
+    value.value="";
+}
+
+function renderTable(){
+    const tb=document.getElementById("dataBody");
+    tb.innerHTML="";
+    data.slice().reverse().forEach(r=>{
+        tb.innerHTML+=`
+        <tr>
+            <td>${r.id}</td>
+            <td>${r.method}</td>
+            <td>${r.strain}</td>
+            <td>${r.extract}</td>
+            <td>R${r.replicate}</td>
+            <td>${r.batch}</td>
+            <td>${r.value}</td>
+        </tr>`;
+    });
+}
+
+initForm();
 </script>
+
 </body>
 </html>
-
