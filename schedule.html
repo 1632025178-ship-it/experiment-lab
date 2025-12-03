@@ -96,130 +96,84 @@ main{
 
 <main>
 
-<h2 class="section-title">🗓️ 第 1 周计划（更新后）</h2>
-
+<h2 class="section-title">🗓️ 第 1 周计划</h2>
 <div id="week1" class="week-board"></div>
 
-<h2 class="section-title">🗓️ 第 2 周计划（建议版）</h2>
-
+<h2 class="section-title">🗓️ 第 2 周计划</h2>
 <div id="week2" class="week-board"></div>
 
 </main>
 
+<!-- ========================================================= -->
+<!-- ===============  FINAL LocalStorage VERSION ============== -->
+<!-- ========================================================= -->
 
 <script>
-// ======================= 任务数据 ========================= //
-const week1Tasks = [
-    {
-        date:"周四",
-        time:"14:00–18:00",
-        title:"菌液接种（4 菌种）",
-        note:"EC / BS / AS / PS 液体培养 50mL",
-        status:"未开始"
-    },
-    {
-        date:"周五",
-        time:"9:00–12:00",
-        title:"植物剪碎（10 种）",
-        note:"去杂质，刀具消毒",
-        status:"未开始"
-    },
-    {
-        date:"周五",
-        time:"14:00–18:00",
-        title:"植物烘干（第一批）",
-        note:"55–60℃，记录重量",
-        status:"未开始"
-    },
-    {
-        date:"周日",
-        time:"9:00–16:00",
-        title:"乙醇初步浸提（全部植物）",
-        note:"料液比 1:20，水浴 2h",
-        status:"未开始"
-    },
-    {
-        date:"下周一",
-        time:"9:00–12:00",
-        title:"旋蒸浓缩（第一批）",
-        note:"温度 45–50℃，定容 20 mL",
-        status:"未开始"
+const LS_KEY = "SCHEDULE_TASKS";
+
+function loadTasks(){
+    const saved = localStorage.getItem(LS_KEY);
+    if(saved){
+        return JSON.parse(saved);
+    } else {
+        // 默认任务（已根据你开会后的计划更新）
+        return {
+            week1: [
+                {date:"周四", time:"14:00–18:00", title:"菌液接种（4 菌种）", note:"EC/BS/AS/PS 50mL", status:"未开始"},
+                {date:"周五", time:"9:00–12:00", title:"植物剪碎（10 种）", note:"去杂质；刀具酒精消毒", status:"未开始"},
+                {date:"周五", time:"14:00–18:00", title:"植物烘干", note:"55–60℃；记录重量", status:"未开始"},
+                {date:"周日", time:"9:00–16:00", title:"乙醇初次浸提", note:"料液比 1:20；水浴 2h", status:"未开始"},
+                {date:"下周一", time:"9:00–12:00", title:"旋蒸浓缩", note:"45–50℃；定容 20 mL", status:"未开始"}
+            ],
+            week2: [
+                {date:"周二", time:"全天", title:"菌液培养状态检查", note:"OD600 / 菌落", status:"未开始"},
+                {date:"周三", time:"14:00–18:00", title:"抑菌圈试验（EC/BS）", note:"32板布局", status:"未开始"},
+                {date:"周四", time:"9:00–12:00", title:"抑菌圈拍照 + 测径", note:"游标卡尺测量", status:"未开始"},
+                {date:"周五", time:"14:00–18:00", title:"MIC 布板（EC）", note:"96 孔板布局", status:"未开始"},
+                {date:"周日", time:"13:00–17:00", title:"MIC 结果读取", note:"最低抑制浓度", status:"未开始"}
+            ]
+        };
     }
-];
+}
 
-const week2Tasks = [
-    {
-        date:"周二",
-        time:"全天",
-        title:"菌液培养状态检查",
-        note:"OD 或菌落观察",
-        status:"未开始"
-    },
-    {
-        date:"周三",
-        time:"14:00–18:00",
-        title:"抑菌圈试验（EC/BS）",
-        note:"按 8 块平板方案布置",
-        status:"未开始"
-    },
-    {
-        date:"周四",
-        time:"9:00–12:00",
-        title:"抑菌圈拍照 + 测径",
-        note:"游标卡尺测量",
-        status:"未开始"
-    },
-    {
-        date:"周五",
-        time:"14:00–18:00",
-        title:"MIC 布板（EC-MIC）",
-        note:"按 96 孔板布局",
-        status:"未开始"
-    },
-    {
-        date:"周日",
-        time:"13:00–17:00",
-        title:"MIC 结果读取",
-        note:"记录最低抑制浓度",
-        status:"未开始"
-    }
-];
+function saveTasks(){
+    localStorage.setItem(LS_KEY, JSON.stringify(tasks));
+}
+
+const tasks = loadTasks();
 
 
-// =================== 渲染任务卡片 ==================== //
-function renderTasks(containerId, taskList){
-    const container=document.getElementById(containerId);
-    container.innerHTML="";
+function renderTasks(containerId, listName){
+    const container = document.getElementById(containerId);
+    container.innerHTML = "";
 
-    taskList.forEach((task,i)=>{
-        const div=document.createElement("div");
-        div.className="card";
-        div.innerHTML=`
+    tasks[listName].forEach((task, i)=>{
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
             <div class="task-title">${task.title}</div>
             <div class="task-time">${task.date} ｜ ${task.time}</div>
             <div style="margin-top:6px;font-size:13px;color:#555;">${task.note}</div>
-            <div class="task-status status-${task.status}" onclick="toggleStatus('${containerId}',${i})">
+            <div class="task-status status-${task.status}" onclick="toggleStatus('${listName}',${i})">
                 ${task.status}
             </div>
         `;
-        container.appendChild(div);
+        container.appendChild(card);
     });
 }
 
-// =================== 状态切换 ==================== //
-function toggleStatus(week,i){
-    const arr = week==="week1"?week1Tasks:week2Tasks;
-    const order=["未开始","进行中","已完成"];
-    let idx = order.indexOf(arr[i].status);
-    arr[i].status = order[(idx+1)%3];
-    renderTasks(week,arr);
+function toggleStatus(listName, index){
+    const order = ["未开始","进行中","已完成"];
+    const cur = tasks[listName][index].status;
+    tasks[listName][index].status = order[(order.indexOf(cur)+1)%3];
+    saveTasks();
+    renderTasks("week1","week1");
+    renderTasks("week2","week2");
 }
 
-
-// 初始化渲染
-renderTasks("week1", week1Tasks);
-renderTasks("week2", week2Tasks);
-
+// 初次渲染
+renderTasks("week1","week1");
+renderTasks("week2","week2");
 </script>
 
 </body>
