@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<title>排班表格视图 - 抗菌实验系统</title>
+<title>实验排班表格 - 抗菌实验系统</title>
 
 <style>
 :root{
@@ -11,12 +11,14 @@
     --bg:#F5F7FA;
     --text:#263238;
 }
-*{box-sizing:border-box;margin:0;padding:0;}
+
 body{
-    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",微软雅黑,sans-serif;
+    margin:0;
     background:var(--bg);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",微软雅黑,sans-serif;
     color:var(--text);
 }
+
 header{
     background:white;
     padding:16px 40px;
@@ -25,6 +27,7 @@ header{
     align-items:center;
     border-bottom:1px solid #DDD;
 }
+
 nav a{
     margin-left:16px;
     text-decoration:none;
@@ -36,55 +39,47 @@ nav a:hover{
     background:var(--primary-light);
     color:white;
 }
+
 main{
-    max-width:1200px;
+    max-width:1100px;
     margin:24px auto;
     padding:0 16px;
 }
+
 h2{
-    color:var(--primary);
     margin:20px 0 10px;
+    color:var(--primary);
 }
 
 table{
     width:100%;
     border-collapse:collapse;
     background:white;
-    box-shadow:0 2px 6px rgba(0,0,0,0.05);
     border-radius:12px;
     overflow:hidden;
+    font-size:14px;
+    box-shadow:0 2px 6px rgba(0,0,0,0.05);
 }
 th,td{
-    border:1px solid #E0E0E0;
+    border:1px solid #E5E5E5;
     padding:10px;
     text-align:center;
-    font-size:14px;
 }
 th{
     background:#E8F5E9;
     font-weight:600;
 }
-.status-btn{
-    padding:4px 10px;
-    border-radius:8px;
-    cursor:pointer;
-    color:white;
-    font-size:13px;
-}
-.status-未开始{background:#9CA3AF;}
-.status-进行中{background:#2563EB;}
-.status-已完成{background:#10B981;}
 </style>
 </head>
 
 <body>
 
 <header>
-    <h1>实验排班（表格视图）</h1>
+    <h1>实验排班（标准表格视图）</h1>
     <nav>
         <a href="index.html">首页</a>
         <a href="schedule.html">看板视图</a>
-        <a href="schedule_table.html">排班表格</a>
+        <a href="schedule_table.html">表格排班</a>
         <a href="layout.html">实验布局</a>
         <a href="entry.html">数据录入</a>
         <a href="sop.html">SOP</a>
@@ -93,99 +88,97 @@ th{
 
 <main>
 
-<h2>📄 第 1 周排班</h2>
-<table id="table1">
-    <thead>
-        <tr>
-            <th>日期</th>
-            <th>时间</th>
-            <th>任务内容</th>
-            <th>备注</th>
-            <th>状态</th>
-        </tr>
-    </thead>
-    <tbody></tbody>
+<!-- ----------- 第 1 周 ------------ -->
+<h2>📄 第 1 周排班（已修订）</h2>
+<table>
+<thead>
+    <tr>
+        <th>日期</th>
+        <th>时间</th>
+        <th>任务内容</th>
+        <th>备注</th>
+    </tr>
+</thead>
+<tbody>
+    <tr>
+        <td>周四</td>
+        <td>14:00–18:00</td>
+        <td>菌液接种（4 菌种）</td>
+        <td>EC/BS/AS/PS 液体培养 50 mL</td>
+    </tr>
+    <tr>
+        <td>周五</td>
+        <td>09:00–12:00</td>
+        <td>植物剪碎（10 种）</td>
+        <td>去杂质，刀具酒精消毒</td>
+    </tr>
+    <tr>
+        <td>周五</td>
+        <td>14:00–18:00</td>
+        <td>植物烘干（第一批）</td>
+        <td>55–60℃，记录重量</td>
+    </tr>
+    <tr>
+        <td>周日</td>
+        <td>09:00–16:00</td>
+        <td>乙醇初步浸提（全部植物）</td>
+        <td>料液比 1:20，水浴 2h</td>
+    </tr>
+    <tr>
+        <td>下周一</td>
+        <td>09:00–12:00</td>
+        <td>旋蒸浓缩（第一批）</td>
+        <td>45–50℃，定容 20 mL</td>
+    </tr>
+</tbody>
 </table>
 
-<h2>📄 第 2 周排班</h2>
-<table id="table2">
-    <thead>
-        <tr>
-            <th>日期</th>
-            <th>时间</th>
-            <th>任务内容</th>
-            <th>备注</th>
-            <th>状态</th>
-        </tr>
-    </thead>
-    <tbody></tbody>
+<!-- ----------- 第 2 周 ------------ -->
+<h2>📄 第 2 周排班（建议版）</h2>
+<table>
+<thead>
+    <tr>
+        <th>日期</th>
+        <th>时间</th>
+        <th>任务内容</th>
+        <th>备注</th>
+    </tr>
+</thead>
+<tbody>
+    <tr>
+        <td>周二</td>
+        <td>全天</td>
+        <td>菌液培养状态检查</td>
+        <td>OD 或菌落观察</td>
+    </tr>
+    <tr>
+        <td>周三</td>
+        <td>14:00–18:00</td>
+        <td>抑菌圈试验（EC/BS）</td>
+        <td>按 32 板布局实验</td>
+    </tr>
+    <tr>
+        <td>周四</td>
+        <td>09:00–12:00</td>
+        <td>抑菌圈拍照 + 测径</td>
+        <td>卡尺测量</td>
+    </tr>
+    <tr>
+        <td>周五</td>
+        <td>14:00–18:00</td>
+        <td>MIC 运作（EC-MIC）</td>
+        <td>按 96 孔板布局</td>
+    </tr>
+    <tr>
+        <td>周日</td>
+        <td>13:00–17:00</td>
+        <td>MIC 结果读取</td>
+        <td>最低抑制浓度</td>
+    </tr>
+</tbody>
 </table>
 
 </main>
-
-
-<script>
-// ================ LocalStorage 读取 =================== //
-const LS_KEY = "SCHEDULE_TASKS";
-
-function loadTasks(){
-    const saved = localStorage.getItem(LS_KEY);
-    if(saved){
-        return JSON.parse(saved);
-    }
-    return { week1:[],week2:[] };
-}
-
-function saveTasks(){
-    localStorage.setItem(LS_KEY, JSON.stringify(tasks));
-}
-
-const tasks = loadTasks();
-
-
-// ================ 渲染表格 =================== //
-
-function renderTable(tableId, listName){
-    const tbody = document.querySelector(`#${tableId} tbody`);
-    tbody.innerHTML = "";
-
-    tasks[listName].forEach((task, i)=>{
-        const tr = document.createElement("tr");
-
-        tr.innerHTML = `
-            <td>${task.date}</td>
-            <td>${task.time}</td>
-            <td>${task.title}</td>
-            <td>${task.note}</td>
-            <td>
-                <span class="status-btn status-${task.status}" onclick="toggleStatus('${listName}',${i})">
-                    ${task.status}
-                </span>
-            </td>
-        `;
-
-        tbody.appendChild(tr);
-    });
-}
-
-
-// ================ 状态切换 =================== //
-function toggleStatus(listName, index){
-    const order = ["未开始","进行中","已完成"];
-    const cur = tasks[listName][index].status;
-    tasks[listName][index].status = order[(order.indexOf(cur)+1)%3];
-
-    saveTasks();
-    renderTable("table1","week1");
-    renderTable("table2","week2");
-}
-
-
-// 初次渲染
-renderTable("table1","week1");
-renderTable("table2","week2");
-
-</script>
 
 </body>
 </html>
