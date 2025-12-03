@@ -1,5 +1,31 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+    <div class="export-buttons">
+    <button onclick="exportZOI()" class="export-btn">📤 导出 ZOI 模板</button>
+    <button onclick="exportMIC()" class="export-btn">📤 导出 MIC 模板</button>
+    <button onclick="exportSchedule()" class="export-btn">📤 导出排班模板</button>
+</div>
+
+<style>
+.export-buttons {
+    margin: 20px 0;
+    display: flex;
+    gap: 12px;
+}
+.export-btn {
+    padding: 10px 14px;
+    background: #10b981;
+    border: none;
+    color: white;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+}
+.export-btn:hover {
+    background: #059669;
+}
+</style>
+
 <head>
     <meta charset="UTF-8" />
     <title>数据录入 - 抗菌实验系统</title>
@@ -215,3 +241,4 @@
 </script>
 </body>
 </html>
+
