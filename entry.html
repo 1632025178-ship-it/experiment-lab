@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <title>数据录入 - 抗菌实验系统</title>
 
-    <!-- Excel 导出库 -->
+    <!-- Excel 库 -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
     <style>
@@ -20,6 +20,7 @@
             background: var(--bg);
             color: var(--text);
         }
+
         header {
             background: white;
             border-bottom: 1px solid #E0E0E0;
@@ -38,22 +39,27 @@
             padding: 6px 10px;
             border-radius: 999px;
         }
-        nav a:hover { background: var(--primary-light); color:white; }
+        nav a:hover {
+            background: var(--primary-light);
+            color:white;
+        }
 
         main {
             max-width: 1100px;
             margin: 24px auto;
             padding: 16px;
-            display:grid;
+            display: grid;
             grid-template-columns: 320px 1fr;
-            gap:16px;
+            gap: 16px;
         }
+
         .card {
             background:white;
             border-radius:12px;
             padding:16px;
             box-shadow:0 2px 6px rgba(0,0,0,0.05);
         }
+
         label { display:block; margin:8px 0 4px; font-size:13px; }
         input,select {
             width:100%;
@@ -73,6 +79,7 @@
             margin-top:10px;
         }
         .btn:hover { background:#1B5E20; }
+
         table {
             width:100%;
             border-collapse:collapse;
@@ -98,12 +105,12 @@
         .float-btn {
             padding: 10px 14px;
             background: #10b981;
-            border-radius: 8px;
-            border: none;
-            color: white;
-            cursor: pointer;
+            color:white;
+            border:none;
+            border-radius:8px;
+            cursor:pointer;
             font-size:14px;
-            box-shadow: 0 2px 6px rgba(0,0,0,.15);
+            box-shadow:0 2px 6px rgba(0,0,0,.15);
         }
         .float-btn:hover { background:#059669; }
         .float-btn.save { background:#2563eb; }
@@ -127,6 +134,7 @@
         }
         .notify.success { background:#10b981; }
         .notify.error { background:#ef4444; }
+
         @keyframes fadeIn {
             from { opacity:0; transform:translateY(-6px); }
             to { opacity:1; transform:translateY(0); }
@@ -136,7 +144,7 @@
 
 <body>
 
-<!-- ====== 悬浮工具栏（右侧） ====== -->
+<!-- ====== 悬浮工具栏 ====== -->
 <div class="floating-tools">
     <button onclick="exportZOI()" class="float-btn">ZOI模板</button>
     <button onclick="exportMIC()" class="float-btn">MIC模板</button>
@@ -159,10 +167,57 @@
     </nav>
 </header>
 
-<!-- ====================== JavaScript ====================== -->
+<!-- ======================= MAIN（放这里） ======================= -->
+<main>
+    <div class="card">
+        <h3>新记录录入</h3>
+
+        <label>实验方法</label>
+        <select id="method">
+            <option value="ZOI">抑菌圈直径 (mm)</option>
+            <option value="MIC">MIC 浓度 (%)</option>
+        </select>
+
+        <label>菌株</label>
+        <select id="strain"></select>
+
+        <label>植物提取物</label>
+        <select id="extract"></select>
+
+        <label>重复次数（R）</label>
+        <input type="number" id="replicate" min="1" max="5" value="1" />
+
+        <label>批次号</label>
+        <input type="text" id="batch" value="B001" />
+
+        <label id="valueLabel">抑菌圈直径 (mm)</label>
+        <input type="number" id="value" step="0.1" />
+
+        <button class="btn" onclick="addRecord()">保存记录</button>
+    </div>
+
+    <div class="card">
+        <h3>已录入记录</h3>
+        <table>
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>方法</th>
+                <th>菌株</th>
+                <th>提取物</th>
+                <th>重复</th>
+                <th>批次</th>
+                <th>数值</th>
+            </tr>
+            </thead>
+            <tbody id="dataBody"></tbody>
+        </table>
+    </div>
+</main>
+
+<!-- ======================= JS 功能 ======================= -->
 
 <script>
-// ================== 通知系统 ================== //
 function notify(type, msg) {
     const box = document.getElementById("notifyBox");
     const div = document.createElement("div");
@@ -173,10 +228,7 @@ function notify(type, msg) {
 }
 </script>
 
-
-
 <script>
-// ================== Excel 导出：ZOI 模板 ================== //
 function exportZOI() {
     const wb = XLSX.utils.book_new();
     const ws = XLSX.utils.aoa_to_sheet([
@@ -185,14 +237,11 @@ function exportZOI() {
     ]);
     XLSX.utils.book_append_sheet(wb, ws, "ZOI");
     XLSX.writeFile(wb, "zoi_template.xlsx");
-    notify("success", "已导出 ZOI 模板");
+    notify("success","已导出 ZOI 模板");
 }
 </script>
 
-
-
 <script>
-// ================== Excel 导出：MIC 模板 ================== //
 function exportMIC() {
     const wb = XLSX.utils.book_new();
     const ws = XLSX.utils.aoa_to_sheet([
@@ -201,60 +250,43 @@ function exportMIC() {
     ]);
     XLSX.utils.book_append_sheet(wb, ws, "MIC");
     XLSX.writeFile(wb, "mic_template.xlsx");
-    notify("success", "已导出 MIC 模板");
+    notify("success","已导出 MIC 模板");
 }
 </script>
 
-
-
 <script>
-// ================== Excel 导出：排班模板 ================== //
 function exportSchedule() {
     const wb = XLSX.utils.book_new();
     const ws = XLSX.utils.aoa_to_sheet([
         ["TaskID","Date","Time","Content","Status","Note","Screenshot"],
-        ["S001","","09:00–12:00","","未开始/进行中/已完成","",""]
+        ["S001","","09:00-12:00","","未开始/进行中/已完成","",""]
     ]);
     XLSX.utils.book_append_sheet(wb, ws, "Schedule");
     XLSX.writeFile(wb, "schedule_template.xlsx");
-    notify("success", "已导出排班模板");
+    notify("success","已导出排班模板");
 }
 </script>
 
-
-
 <script>
-// ================== 导出全部录入记录 ================== //
-function exportAllData() {
-    if (data.length === 0) {
+function exportAllData(){
+    if(data.length === 0){
         notify("error","当前无数据可导出");
         return;
     }
-
     const wb = XLSX.utils.book_new();
-    const sheetData = [
-        ["ID","Method","Strain","Extract","Rep","Batch","Value"]
-    ];
-
-    data.forEach(r=>{
-        sheetData.push([
-            r.id, r.method, r.strain, r.extract,
-            "R"+r.replicate, r.batch, r.value
-        ]);
-    });
-
-    const ws = XLSX.utils.aoa_to_sheet(sheetData);
+    const ws = XLSX.utils.aoa_to_sheet([
+        ["ID","Method","Strain","Extract","Rep","Batch","Value"],
+        ...data.map(r=>[
+            r.id,r.method,r.strain,r.extract,"R"+r.replicate,r.batch,r.value
+        ])
+    ]);
     XLSX.utils.book_append_sheet(wb, ws, "DATA");
-
-    XLSX.writeFile(wb, "all_data.xlsx");
-    notify("success","已导出 all_data.xlsx");
+    XLSX.writeFile(wb,"all_data.xlsx");
+    notify("success","成功导出 all_data.xlsx");
 }
 </script>
 
-
-
 <script>
-// ================== 导出 32 块抑菌圈平板布局 ================== //
 function export32Plates() {
     const plants = ["P1","P2","P3","P4","P5","P6","P7","P8","P9","P10"];
     const repeats = ["R1","R2","R3"];
@@ -267,14 +299,13 @@ function export32Plates() {
         let ptr = 0;
         let rpt = 0;
 
-        for(let i=1; i<=8; i++){
-            const row = [`${strain}-${i}`];
-
-            if (i === 8) {
-                row.push("阴性对照","阳性对照","空","空");
+        for(let i=1;i<=8;i++){
+            const row=[`${strain}-${i}`];
+            if(i===8){
+                row.push("阴性","阳性","空","空");
             } else {
-                for(let c=0; c<4; c++){
-                    if(ptr >= plants.length) { ptr = 0; rpt++; }
+                for(let c=0;c<4;c++){
+                    if(ptr>=plants.length){ ptr=0; rpt++; }
                     row.push(plants[ptr] + "-" + repeats[rpt]);
                     ptr++;
                 }
@@ -286,69 +317,55 @@ function export32Plates() {
         XLSX.utils.book_append_sheet(wb, ws, strain);
     });
 
-    XLSX.writeFile(wb, "32_plates_layout.xlsx");
+    XLSX.writeFile(wb,"32_plates_layout.xlsx");
     notify("success","已导出 32 块抑菌圈平板布局");
 }
 </script>
 
-
-
 <script>
-// ================== 导出 8×MIC 板布局 ================== //
 function export8MIC() {
-    const plants = ["P1","P2","P3","P4","P5","P6","P7","P8","P9","P10"];
-    const rows = ["A","B","C","D","E"];
-    const strains = ["EC","BS","AS","PS"];
+    const plants=["P1","P2","P3","P4","P5","P6","P7","P8","P9","P10"];
+    const rows=["A","B","C","D","E"];
+    const strains=["EC","BS","AS","PS"];
 
     const wb = XLSX.utils.book_new();
 
     strains.forEach(strain=>{
         for(let block=0; block<2; block++){
-            const ws_data = [["Row","1","2","3","4","5","6","7","8","9","10","11","12"]];
+            const ws_data=[["Row","1","2","3","4","5","6","7","8","9","10","11","12"]];
 
-            rows.forEach((row, rIndex)=>{
-                const line = [row];
+            rows.forEach((row,rIndex)=>{
+                const line=[row];
                 const plant = plants[rIndex + block*5];
-
-                // 8 个浓度（C1~C8）
                 for(let i=1;i<=8;i++){
-                    line.push(plant + "_C" + i);
+                    line.push(plant+"_C"+i);
                 }
-
-                // 9–12 列对照
                 line.push("空白","生长对照","溶剂对照","阳性药");
-
                 ws_data.push(line);
             });
 
             const ws = XLSX.utils.aoa_to_sheet(ws_data);
-            XLSX.utils.book_append_sheet(
-                wb, ws, `${strain}-MIC-${block+1}`
-            );
+            XLSX.utils.book_append_sheet(wb, ws, `${strain}-MIC-${block+1}`);
         }
     });
 
     XLSX.writeFile(wb, "8_MIC_layout.xlsx");
-    notify("success","已导出 8×MIC 板布局");
+    notify("success", "已导出 8×MIC 布局");
 }
 </script>
 
-
-
-<!-- ================== 数据录入模块 JS ================== -->
 <script>
-const extracts = [
+const extracts=[
     "P1 柑橘果皮","P2 石榴皮","P3 苹果皮","P4 香蕉皮",
     "P5 枇杷叶","P6 菊花/金银花","P7 绿茶","P8 薄荷",
     "P9 迷迭香","P10 芦荟"
 ];
-const strains = ["EC","BS","AS","PS"];
-
-const data = [];
+const strains=["EC","BS","AS","PS"];
+const data=[];
 
 function initForm(){
-    const s = document.getElementById("strain");
-    const e = document.getElementById("extract");
+    const s=document.getElementById("strain");
+    const e=document.getElementById("extract");
 
     strains.forEach(v=>{
         const o=document.createElement("option");
@@ -369,14 +386,14 @@ function initForm(){
 }
 
 function addRecord(){
-    const r = {
-        id: Date.now(),
-        method: method.value,
-        strain: strain.value,
-        extract: extract.value,
-        replicate: replicate.value,
-        batch: batch.value,
-        value: parseFloat(value.value)
+    const r={
+        id:Date.now(),
+        method:method.value,
+        strain:strain.value,
+        extract:extract.value,
+        replicate:replicate.value,
+        batch:batch.value,
+        value:parseFloat(value.value)
     };
 
     if(isNaN(r.value)){
@@ -391,8 +408,8 @@ function addRecord(){
 }
 
 function renderTable(){
-    const tb = document.getElementById("dataBody");
-    tb.innerHTML = "";
+    const tb=document.getElementById("dataBody");
+    tb.innerHTML="";
     data.slice().reverse().forEach(r=>{
         tb.innerHTML += `
         <tr>
