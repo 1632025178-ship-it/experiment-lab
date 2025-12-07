@@ -1,424 +1,246 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8" />
-    <title>数据录入 - 抗菌实验系统</title>
+<meta charset="UTF-8" />
+<title>实验布局预览 - 抗菌实验系统</title>
 
-    <!-- Excel 导出库 -->
-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+    :root{
+        --primary:#2E7D32;
+        --primary-light:#A5D6A7;
+        --bg:#F5F7FA;
+        --text:#263238;
+    }
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{
+        font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",微软雅黑,sans-serif;
+        background:var(--bg);
+        color:var(--text);
+        padding-bottom:60px;
+    }
 
-    <style>
-        :root {
-            --primary: #2E7D32;
-            --primary-light: #A5D6A7;
-            --bg: #F5F7FA;
-            --text: #263238;
-        }
-        * { box-sizing: border-box; margin:0; padding:0; }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", 微软雅黑, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-        }
-        header {
-            background: white;
-            border-bottom: 1px solid #E0E0E0;
-            padding: 16px 40px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-        nav a {
-            margin-left: 16px;
-            text-decoration: none;
-            color: var(--text);
-            padding: 6px 10px;
-            border-radius: 999px;
-        }
-        nav a:hover { background: var(--primary-light); color:white; }
+    header{
+        background:white;
+        padding:16px 40px;
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        border-bottom:1px solid #DDD;
+    }
+    nav a{
+        margin-left:16px;
+        text-decoration:none;
+        color:var(--text);
+        padding:6px 10px;
+        border-radius:999px;
+    }
+    nav a:hover{
+        background:var(--primary-light);
+        color:white;
+    }
 
-        main {
-            max-width: 1100px;
-            margin: 24px auto;
-            padding: 16px;
-            display: grid;
-            grid-template-columns: 320px 1fr;
-            gap: 16px;
-        }
-        .card {
-            background: white;
-            border-radius: 12px;
-            padding: 16px;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-        }
-        label { display: block; margin: 8px 0 4px; font-size: 13px; }
-        input, select {
-            width: 100%;
-            padding: 6px 8px;
-            border-radius: 6px;
-            border: 1px solid #CFD8DC;
-            font-size: 13px;
-        }
-        .btn {
-            border: none;
-            background: var(--primary);
-            color: white;
-            padding: 8px 14px;
-            border-radius: 999px;
-            cursor: pointer;
-            width: 100%;
-            margin-top: 10px;
-        }
-        .btn:hover { background: #1B5E20; }
+    .container{
+        max-width:1200px;
+        margin:20px auto;
+        padding:10px 20px;
+    }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 12px;
-        }
-        th, td {
-            border: 1px solid #ECEFF1;
-            padding: 6px 8px;
-            text-align: center;
-        }
-        th { background: #E8F5E9; }
+    h2{
+        margin:30px 0 15px;
+        color:var(--primary);
+        font-size:22px;
+    }
 
-        /* ===== 悬浮工具栏 ===== */
-        .floating-tools {
-            position: fixed;
-            top: 120px;
-            right: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            z-index: 999;
-        }
-        .float-btn {
-            padding: 10px 14px;
-            background: #10b981;
-            border-radius: 8px;
-            border: none;
-            color: white;
-            cursor: pointer;
-            font-size: 14px;
-            box-shadow: 0 2px 6px rgba(0,0,0,.15);
-        }
-        .float-btn:hover { background:#059669; }
-        .float-btn.save { background:#2563eb; }
-        .float-btn.save:hover { background:#1d4ed8; }
+    /* 平板布局表格 */
+    table{
+        width:100%;
+        border-collapse:collapse;
+        background:white;
+        border-radius:10px;
+        overflow:hidden;
+        margin-bottom:20px;
+        font-size:14px;
+    }
+    th, td{
+        border:1px solid #E0E0E0;
+        padding:8px;
+        text-align:center;
+    }
+    th{
+        background:#E8F5E9;
+    }
 
-        /* ===== 通知框 ===== */
-        #notifyBox {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            max-width: 260px;
-            z-index: 2000;
-        }
-        .notify {
-            padding: 12px 16px;
-            margin-bottom: 10px;
-            border-radius: 8px;
-            color: white;
-            font-size: 14px;
-            animation: fadeIn .3s ease;
-        }
-        .notify.success { background:#10b981; }
-        .notify.error { background:#ef4444; }
-        @keyframes fadeIn {
-            from { opacity:0; transform:translateY(-6px); }
-            to { opacity:1; transform:translateY(0); }
-        }
-    </style>
+    /* MIC 配液表 */
+    .mic-box{
+        margin-top:40px;
+        padding:20px;
+        background:white;
+        border-radius:12px;
+        box-shadow:0 2px 6px rgba(0,0,0,.08);
+    }
+</style>
 </head>
 
 <body>
 
-<!-- ====== 悬浮工具栏（右侧） ====== -->
-<div class="floating-tools">
-    <button onclick="exportZOI()" class="float-btn">ZOI模板</button>
-    <button onclick="exportMIC()" class="float-btn">MIC模板</button>
-    <button onclick="export32Plates()" class="float-btn">32板布局</button>
-    <button onclick="export8MIC()" class="float-btn">8×MIC</button>
-    <button onclick="exportAllData()" class="float-btn save">导出数据</button>
-</div>
-
-<!-- 通知框 -->
-<div id="notifyBox"></div>
-
 <header>
-    <h1>数据录入模块（ZOI / MIC）</h1>
+    <h1>实验布局预览</h1>
     <nav>
         <a href="index.html">首页</a>
         <a href="schedule.html">实验排班</a>
+        <a href="schedule_table.html">排班表格</a>
         <a href="layout.html">实验布局</a>
         <a href="entry.html">数据录入</a>
         <a href="sop.html">SOP</a>
     </nav>
 </header>
 
-<!-- ===================== 主内容 ===================== -->
-<main>
+<div class="container">
 
-<!-- ========== 左侧：数据录入 ========== -->
-<div class="card">
-    <h3>新记录录入</h3>
+<!-- ========================== 1. 抑菌圈平板布局 ========================== -->
+<h2>生成抑菌圈平板布局（9 植物 × 4 菌 × 3 重复）</h2>
 
-    <label>实验方法</label>
-    <select id="method">
-        <option value="ZOI">抑菌圈直径 (mm)</option>
-        <option value="MIC">MIC 浓度 (%)</option>
-    </select>
-
-    <label>菌株</label>
-    <select id="strain"></select>
-
-    <label>植物提取物</label>
-    <select id="extract"></select>
-
-    <label>重复（R）</label>
-    <input type="number" id="replicate" min="1" max="5" value="1" />
-
-    <label>批次号</label>
-    <input type="text" id="batch" value="B001" />
-
-    <label id="valueLabel">抑菌圈直径 (mm)</label>
-    <input type="number" id="value" step="0.1" />
-
-    <button class="btn" onclick="addRecord()">保存记录</button>
-</div>
-
-<!-- ========== 右侧：数据表格 ========== -->
-<div class="card">
-    <h3>已录入记录</h3>
-    <table>
-        <thead>
-            <tr>
-                <th>ID</th><th>方法</th><th>菌株</th><th>提取物</th>
-                <th>重复</th><th>批次</th><th>数值</th>
-            </tr>
-        </thead>
-        <tbody id="dataBody"></tbody>
-    </table>
-</div>
-
-</main>
-
-
-<!-- ====================== JavaScript ====================== -->
+<div id="plateArea"></div>
 
 <script>
-// ================== 通知系统 ================== //
-function notify(type, msg) {
-    const box = document.getElementById("notifyBox");
-    const div = document.createElement("div");
-    div.className = "notify " + type;
-    div.textContent = msg;
-    box.appendChild(div);
-    setTimeout(()=> div.remove(), 3000);
-}
-</script>
+const plants = [
+    "薄荷","迷迭香","柠檬皮","橙子皮",
+    "桑叶","枇杷叶","绿茶","干槐花","芦荟"
+];
+const repeats = ["R1","R2","R3"];
+const strains = ["EC","BS","AS","PS"];
 
-<!-- ================== 9 种植物 Excel 模板区 ================== -->
-<script>
-function exportZOI() {
-    const wb = XLSX.utils.book_new();
-    const ws = XLSX.utils.aoa_to_sheet([
-        ["RecordID","Date","Strain","Plant","Replicate","Diameter_mm","Photo"],
-        ["ZOI001","","EC/BS/AS/PS","薄荷/迷迭香/柠檬皮/橙子皮/桑叶/枇杷叶/绿茶/干槐花/芦荟","R1/R2/R3","",""]
-    ]);
-    XLSX.utils.book_append_sheet(wb, ws, "ZOI");
-    XLSX.writeFile(wb, "zoi_template.xlsx");
-    notify("success", "已导出 ZOI 模板");
-}
-
-function exportMIC() {
-    const wb = XLSX.utils.book_new();
-    const ws = XLSX.utils.aoa_to_sheet([
-        ["RecordID","Date","Strain","Plant","Row","Col","Conc(%)","OD600","Status","Photo"],
-        ["MIC001","","EC/BS/AS/PS","薄荷/迷迭香/柠檬皮/橙子皮/桑叶/枇杷叶/绿茶/干槐花/芦荟","A-H","1-12","100→0.78","","",""]
-    ]);
-    XLSX.utils.book_append_sheet(wb, ws, "MIC");
-    XLSX.writeFile(wb, "mic_template.xlsx");
-    notify("success", "已导出 MIC 模板");
-}
-</script>
-
-<!-- ================== 导出所有数据 ================== -->
-<script>
-function exportAllData() {
-    if (data.length === 0) { notify("error","当前无数据"); return; }
-    const wb = XLSX.utils.book_new();
-    const sheetData = [["ID","Method","Strain","Extract","Rep","Batch","Value"]];
-    data.forEach(r => {
-        sheetData.push([r.id,r.method,r.strain,r.extract,"R"+r.replicate,r.batch,r.value]);
-    });
-    const ws = XLSX.utils.aoa_to_sheet(sheetData);
-    XLSX.utils.book_append_sheet(wb, ws, "DATA");
-    XLSX.writeFile(wb, "all_data.xlsx");
-    notify("success","已导出数据");
-}
-</script>
-
-<!-- ================== 9 种植物平板布局 ================== -->
-<script>
-function export32Plates() {
-    const plants=["薄荷","迷迭香","柠檬皮","橙子皮","桑叶","枇杷叶","绿茶","干槐花","芦荟"];
-    const repeats=["R1","R2","R3"];
-    const strains=["EC","BS","AS","PS"];
-    const wb = XLSX.utils.book_new();
+/* 生成 32 块平板（每菌种 8 块 × 4 菌种） */
+function renderPlates() {
+    let html = "";
 
     strains.forEach(strain=>{
-        const ws_data=[["Plate","孔1","孔2","孔3","孔4"]];
-        let ptr=0, rpt=0;
+        html += `<h3 style="margin:20px 0 10px;">菌株：${strain}</h3>`;
+        html += `<table><thead><tr>
+                    <th>Plate</th><th>孔1</th><th>孔2</th><th>孔3</th><th>孔4</th>
+                 </tr></thead><tbody>`;
+
+        let ptr = 0, rpt = 0;
+
         for(let i=1;i<=8;i++){
-            const row=[`${strain}-${i}`];
+            html += `<tr><td>${strain}-${i}</td>`;
+
             if(i===8){
-                row.push("阴性对照","阳性对照","空","空");
+                html += `<td>阴性</td><td>阳性</td><td>空</td><td>空</td>`;
             } else {
                 for(let c=0;c<4;c++){
                     if(ptr>=plants.length){ ptr=0; rpt++; }
-                    row.push(plants[ptr]+"-"+repeats[rpt]);
+                    html += `<td>${plants[ptr]}-${repeats[rpt]}</td>`;
                     ptr++;
                 }
             }
-            ws_data.push(row);
+
+            html += `</tr>`;
         }
-        const ws=XLSX.utils.aoa_to_sheet(ws_data);
-        XLSX.utils.book_append_sheet(wb, ws, strain);
+
+        html += `</tbody></table>`;
     });
 
-    XLSX.writeFile(wb,"32_plates_layout.xlsx");
-    notify("success","32 块抑菌圈平板布局已导出");
+    document.getElementById("plateArea").innerHTML = html;
 }
+renderPlates();
 </script>
 
-<!-- ================== MIC 8×板布局 ================== -->
+
+<!-- ========================== 2. MIC 板布局（可视化） ========================== -->
+<h2>96 孔 MIC 布局（自动生成）</h2>
+
+<div id="micArea"></div>
+
 <script>
-function export8MIC() {
-    const plants=["薄荷","迷迭香","柠檬皮","橙子皮","桑叶","枇杷叶","绿茶","干槐花","芦荟"];
-    const rows=["A","B","C","D","E"];
-    const strains=["EC","BS","AS","PS"];
-    const wb=XLSX.utils.book_new();
+function renderMIC() {
+    let html = "";
 
     strains.forEach(strain=>{
-        for(let block=0;block<2;block++){
-            const ws_data=[["Row","1","2","3","4","5","6","7","8","9","10","11","12"]];
-            rows.forEach((row,rIndex)=>{
-                const line=[row];
-                const plant=plants[rIndex+block*5];
-                for(let i=1;i<=8;i++) line.push(`${plant}_C${i}`);
-                line.push("空白","生长对照","溶剂对照","阳性药");
-                ws_data.push(line);
+        html += `<h3 style="margin:20px 0 10px;">菌株：${strain}</h3>`;
+
+        html += `
+        <table>
+            <thead>
+                <tr>
+                    <th>Row</th>
+                    ${Array.from({length:12}, (_,i)=>`<th>${i+1}</th>`).join('')}
+                </tr>
+            </thead>
+            <tbody>
+        `;
+
+        const rows = ["A","B","C","D","E"]; // 5 行
+        for(let block=0; block<2; block++){
+            rows.forEach((row, rIndex) => {
+                let plant = plants[rIndex + block*5];
+                html += `<tr><td>${row}</td>`;
+
+                // 1-8 为 C1~C8
+                for(let c=1;c<=8;c++){
+                    html += `<td>${plant}_C${c}</td>`;
+                }
+
+                // 9-12 为对照
+                html += `
+                    <td>空白</td>
+                    <td>生长对照</td>
+                    <td>溶剂对照</td>
+                    <td>阳性药</td>
+                `;
+                html += `</tr>`;
             });
-            const ws=XLSX.utils.aoa_to_sheet(ws_data);
-            XLSX.utils.book_append_sheet(wb, ws, `${strain}-MIC-${block+1}`);
         }
+
+        html += `</tbody></table>`;
     });
 
-    XLSX.writeFile(wb,"8_MIC_layout.xlsx");
-    notify("success","8×MIC 布局已导出");
+    document.getElementById("micArea").innerHTML = html;
 }
-</script>
-
-<!-- ================== 数据录入表单逻辑 ================== -->
-<script>
-const extracts = ["薄荷","迷迭香","柠檬皮","橙子皮","桑叶","枇杷叶","绿茶","干槐花","芦荟"];
-const strains = ["EC","BS","AS","PS"];
-const data = [];
-
-function initForm(){
-    const s=document.getElementById("strain");
-    const e=document.getElementById("extract");
-    strains.forEach(v=>{ let o=document.createElement("option"); o.value=v; o.textContent=v; s.appendChild(o); });
-    extracts.forEach(v=>{ let o=document.createElement("option"); o.value=v; o.textContent=v; e.appendChild(o); });
-
-    document.getElementById("method").addEventListener("change", e=>{
-        document.getElementById("valueLabel").textContent =
-            e.target.value==="ZOI" ? "抑菌圈直径 (mm)" : "MIC 浓度 (%)";
-    });
-}
-
-function addRecord(){
-    const r={
-        id:Date.now(),
-        method:method.value,
-        strain:strain.value,
-        extract:extract.value,
-        replicate:replicate.value,
-        batch:batch.value,
-        value:parseFloat(value.value)
-    };
-    if(isNaN(r.value)){ notify("error","请输入有效数值"); return; }
-
-    data.push(r);
-    renderTable();
-    value.value="";
-    notify("success","成功添加 1 条记录");
-}
-
-function renderTable(){
-    const tb=document.getElementById("dataBody");
-    tb.innerHTML="";
-    data.slice().reverse().forEach(r=>{
-        tb.innerHTML+=`
-        <tr>
-            <td>${r.id}</td><td>${r.method}</td><td>${r.strain}</td>
-            <td>${r.extract}</td><td>R${r.replicate}</td>
-            <td>${r.batch}</td><td>${r.value}</td>
-        </tr>`;
-    });
-}
-
-initForm();
+renderMIC();
 </script>
 
 
-<!-- ================== MIC 自动配液表 ================== -->
-<h2 style="margin-top:40px;text-align:center;color:#2E7D32;">MIC 自动配液表（2×稀释体系）</h2>
-<div id="micMixTable"></div>
+<!-- ========================== 3. MIC 自动配液表 ========================== -->
+<div class="mic-box">
+<h2>MIC 自动配液表（2×稀释体系）</h2>
+
+<div id="mixTable"></div>
 
 <script>
-const micPlants=["薄荷","迷迭香","柠檬皮","橙子皮","桑叶","枇杷叶","绿茶","干槐花","芦荟"];
-
-function getDilutionSeries(){
-    return [
-        {label:"C1", extract:200, medium:0},
-        {label:"C2", extract:100, medium:100},
-        {label:"C3", extract:50, medium:150},
-        {label:"C4", extract:25, medium:175},
-        {label:"C5", extract:13, medium:187},
-        {label:"C6", extract:6, medium:194},
-        {label:"C7", extract:3, medium:197},
-        {label:"C8", extract:2, medium:198}
+function renderMix() {
+    const dil = [
+        {label:"C1", e:200, m:0},
+        {label:"C2", e:100, m:100},
+        {label:"C3", e:50,  m:150},
+        {label:"C4", e:25,  m:175},
+        {label:"C5", e:13,  m:187},
+        {label:"C6", e:6,   m:194},
+        {label:"C7", e:3,   m:197},
+        {label:"C8", e:2,   m:198},
     ];
-}
 
-function renderMICMixTable(){
-    const dilutions=getDilutionSeries();
-    let html=`<table style="width:100%;border-collapse:collapse;font-size:13px;margin-top:10px;">
-        <thead><tr><th style="padding:8px;border:1px solid #DDD;background:#E8F5E9;">植物</th>`;
-
-    dilutions.forEach(d=> html+=`<th style="padding:8px;border:1px solid #DDD;background:#E8F5E9;">${d.label}</th>` );
+    let html = `<table><thead><tr><th>植物</th>`;
+    dil.forEach(d=> html+=`<th>${d.label}</th>`);
     html+=`</tr></thead><tbody>`;
 
-    micPlants.forEach(plant=>{
-        html+=`<tr><td style="padding:8px;border:1px solid #DDD;">${plant}</td>`;
-        dilutions.forEach(d=>{
-            html+=`<td style="padding:8px;border:1px solid #EEE;">${d.extract}μL 提取液 + ${d.medium}μL 培养基</td>`;
+    plants.forEach(p=>{
+        html+=`<tr><td>${p}</td>`;
+        dil.forEach(d=>{
+            html+=`<td>${d.e}µL + ${d.m}µL</td>`;
         });
         html+=`</tr>`;
     });
 
     html+=`</tbody></table>`;
-    document.getElementById("micMixTable").innerHTML=html;
+    document.getElementById("mixTable").innerHTML = html;
 }
-
-renderMICMixTable();
+renderMix();
 </script>
+
+</div>
+
+</div><!-- container end -->
 
 </body>
 </html>
