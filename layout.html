@@ -43,7 +43,7 @@ h2{
     margin-top:25px;
 }
 
-/* ========= 抑菌圈部分 ========= */
+/* ===================== 抑菌圈平板 ===================== */
 
 .plate-grid{
     display:grid;
@@ -105,22 +105,22 @@ h2{
 .well.bl{ bottom:20px; left:20px; }
 .well.br{ bottom:20px; right:20px; }
 
-/* ========= 96孔 MIC 圆孔布局 ========= */
+/* ===================== MIC 96孔布局 ===================== */
 
 .mic-plate{
     display:inline-grid;
-    grid-template-columns:repeat(12, 30px);
-    gap:8px;
-    background:white;
-    padding:20px;
+    grid-template-columns:repeat(12, 32px);
+    gap:10px;
+    background:#fff;
+    padding:24px;
     border-radius:16px;
+    box-shadow:0 4px 15px rgba(0,0,0,0.12);
     margin-bottom:40px;
-    box-shadow:0 4px 15px rgba(0,0,0,0.1);
 }
 
 .mic-well{
-    width:28px;
-    height:28px;
+    width:30px;
+    height:30px;
     border-radius:50%;
     background:#ffebee;
     border:2px solid #b71c1c;
@@ -134,11 +134,10 @@ h2{
     border-color:#1b5e20;
 }
 
-/* 悬浮提示 */
 .mic-well:hover::after{
     content:attr(data-info);
     position:absolute;
-    top:-32px;
+    top:-34px;
     left:50%;
     transform:translateX(-50%);
     padding:4px 8px;
@@ -147,10 +146,10 @@ h2{
     font-size:11px;
     border-radius:4px;
     white-space:nowrap;
-    pointer-events:none;
 }
 
-/* 自动配液表 */
+/* ===================== 配液表 ===================== */
+
 table{
     width:100%;
     border-collapse:collapse;
@@ -164,6 +163,7 @@ th,td{
 th{
     background:#E8F5E9;
 }
+
 </style>
 </head>
 
@@ -183,7 +183,7 @@ th{
 <main style="max-width:1100px;margin:auto;padding:20px;">
 
 <!-- ========================================================= -->
-<!-- 1. 抑菌圈布局 -->
+<!-- 1. 抑菌圈圆形板布局 -->
 <!-- ========================================================= -->
 <h2>⭕ 抑菌圈圆形平板布局（可点击标记）</h2>
 <div id="plateArea"></div>
@@ -193,46 +193,44 @@ const strains=["EC","BS","AS","PS"];
 const plants=["薄荷","迷迭香","柠檬皮","橙子皮","桑叶","枇杷叶","绿茶","干槐花","芦荟"];
 const repeats=["R1","R2","R3"];
 
-const LS_KEY="PLATE_WELL_STATE";
-let wellState=JSON.parse(localStorage.getItem(LS_KEY)||"{}");
-
-function saveState(){ localStorage.setItem(LS_KEY,JSON.stringify(wellState)); }
-function toggleWell(id){
+let wellState=JSON.parse(localStorage.getItem("PLATE_WELL_STATE")||"{}");
+function savePlate(){ localStorage.setItem("PLATE_WELL_STATE",JSON.stringify(wellState)); }
+function togglePlate(id){
     wellState[id]=!wellState[id];
-    saveState();
+    savePlate();
     document.getElementById(id).classList.toggle("active");
 }
 
-function renderWell(strain,i,pos,label){
+function wellHTML(strain,i,pos,label){
     const id=`${strain}_${i}_${pos}`;
     const active=wellState[id]?"active":"";
-    return `<div id="${id}" class="well ${pos} ${active}" onclick="toggleWell('${id}')">${label}</div>`;
+    return `<div id="${id}" class="well ${pos} ${active}" onclick="togglePlate('${id}')">${label}</div>`;
 }
 
 function renderPlates(){
     let html="";
-
     strains.forEach(strain=>{
         html+=`<h3>菌株：${strain}</h3><div class="plate-grid">`;
 
-        let ptr=0, rpt=0;
+        let ptr=0,rpt=0;
 
         for(let i=1;i<=8;i++){
+
             if(i===8){
                 html+=`
                 <div class="plate-box">
                     <div class="plate-title">${strain}-${i}（对照）</div>
                     <div class="plate">
-                        ${renderWell(strain,i,"tl","阴性")}
-                        ${renderWell(strain,i,"tr","阳性")}
-                        ${renderWell(strain,i,"bl","空白")}
-                        ${renderWell(strain,i,"br","空白")}
+                        ${wellHTML(strain,i,"tl","阴性")}
+                        ${wellHTML(strain,i,"tr","阳性")}
+                        ${wellHTML(strain,i,"bl","空白")}
+                        ${wellHTML(strain,i,"br","空白")}
                     </div>
                 </div>`;
                 continue;
             }
 
-            let wells=[];
+            const wells=[];
             for(let w=0;w<4;w++){
                 if(ptr>=plants.length){ ptr=0; rpt++; }
                 wells.push(plants[ptr]+"-"+repeats[rpt]);
@@ -243,10 +241,10 @@ function renderPlates(){
             <div class="plate-box">
                 <div class="plate-title">${strain}-${i}</div>
                 <div class="plate">
-                    ${renderWell(strain,i,"tl",wells[0])}
-                    ${renderWell(strain,i,"tr",wells[1])}
-                    ${renderWell(strain,i,"bl",wells[2])}
-                    ${renderWell(strain,i,"br",wells[3])}
+                    ${wellHTML(strain,i,"tl",wells[0])}
+                    ${wellHTML(strain,i,"tr",wells[1])}
+                    ${wellHTML(strain,i,"bl",wells[2])}
+                    ${wellHTML(strain,i,"br",wells[3])}
                 </div>
             </div>`;
         }
@@ -259,49 +257,72 @@ function renderPlates(){
 renderPlates();
 </script>
 
+<!-- ========================================================= -->
+<!-- 2. 96孔 MIC 板布局（真实 2×体系） -->
+<!-- ========================================================= -->
 
-<!-- ========================================================= -->
-<!-- 2. 96 孔 MIC 布局 -->
-<!-- ========================================================= -->
-<h2>96 孔 MIC 布局（可点击标记）</h2>
+<h2>96 孔 MIC 布局（2×稀释体系 — 可点击标记加样）</h2>
 <div id="micArea"></div>
 
 <script>
-const micLSKey="MIC_WELL_STATE";
-let micState=JSON.parse(localStorage.getItem(micLSKey)||"{}");
-function saveMIC(){ localStorage.setItem(micLSKey,JSON.stringify(micState)); }
+let micState = JSON.parse(localStorage.getItem("MIC96_STATE") || "{}");
+function saveMic(){ localStorage.setItem("MIC96_STATE", JSON.stringify(micState)); }
 
-function toggleMicWell(id){
+function toggleMic(id){
     micState[id]=!micState[id];
-    saveMIC();
+    saveMic();
     document.getElementById(id).classList.toggle("active");
 }
 
-function renderMIC96(){
+/* 真实实验提示文字 */
+function wellInfo(rowIndex, col){
+
+    const plant = plants[rowIndex];
+
+    const dilution = [
+        "C1：配制『100µL原液 + 100µL培养基』的 2×药液 → 加 100µL → 再加 100µL菌液",
+        "C2：从 C1 取 100µL + 100µL培养基 → 加 100µL → +100µL菌液",
+        "C3：从 C2 取 100µL + 100µL培养基 → 加 100µL → +100µL菌液",
+        "C4：从 C3 取 100µL + 100µL培养基 → 加 100µL → +100µL菌液",
+        "C5：从 C4 取 100µL + 100µL培养基 → 加 100µL → +100µL菌液",
+        "C6：从 C5 取 100µL + 100µL培养基 → 加 100µL → +100µL菌液",
+        "C7：从 C6 取 100µL + 100µL培养基 → 加 100µL → +100µL菌液",
+        "C8：从 C7 取 100µL + 100µL培养基 → 加 100µL → +100µL菌液",
+    ];
+
+    if(col <= 8){
+        return `${plant} — ${dilution[col-1]}`;
+    }
+
+    const ctrl = {
+        9:"空白对照：200µL 培养基（无菌）",
+        10:"生长对照：100µL 培养基 + 100µL 菌液",
+        11:"溶剂对照：100µL 培养基 + 100µL 菌液（含同等乙醇）",
+        12:"阳性对照：100µL 2×抗生素 + 100µL 菌液"
+    };
+    return ctrl[col];
+}
+
+/* 渲染 96孔板 */
+function renderMIC(){
     let html="";
+    const rows=["A","B","C","D","E","F","G","H"];
 
     strains.forEach(strain=>{
-        html+=`<h3 style="margin-top:20px;">菌株：${strain}（96 孔板）</h3>`;
+        html+=`<h3 style="margin:20px 0;">菌株：${strain}</h3>`;
         html+=`<div class="mic-plate">`;
-
-        const rows=["A","B","C","D","E","F","G","H"];
 
         rows.forEach((row,rIndex)=>{
             for(let col=1;col<=12;col++){
                 const id=`${strain}_${row}${col}`;
-                let info="", activeClass=micState[id]?"active":"";
-
-                if(col<=8){
-                    info=`${plants[rIndex]} - C${col}`;
-                }else{
-                    info=["空白","生长对照","溶剂对照","阳性药"][col-9];
-                }
+                const active = micState[id]?"active":"";
+                const info = wellInfo(rIndex, col);
 
                 html+=`
                 <div id="${id}"
-                     class="mic-well ${activeClass}"
-                     onclick="toggleMicWell('${id}')"
-                     data-info="${info}">
+                    class="mic-well ${active}"
+                    onclick="toggleMic('${id}')"
+                    data-info="${info}">
                 </div>`;
             }
         });
@@ -311,27 +332,29 @@ function renderMIC96(){
 
     document.getElementById("micArea").innerHTML=html;
 }
-renderMIC96();
+
+renderMIC();
 </script>
 
+<!-- ========================================================= -->
+<!-- 3. MIC 自动配液表（真实实验版） -->
+<!-- ========================================================= -->
 
-<!-- ========================================================= -->
-<!-- 3. MIC 自动配液表 -->
-<!-- ========================================================= -->
-<h2>MIC 自动配液表（2×稀释体系）</h2>
+<h2>MIC 自动配液表（真实 2×稀释体系）</h2>
 <div id="mixTable"></div>
 
 <script>
 function renderMix(){
-    const dil=[
-        {label:"C1",e:200,m:0},
-        {label:"C2",e:100,m:100},
-        {label:"C3",e:50, m:150},
-        {label:"C4",e:25, m:175},
-        {label:"C5",e:13, m:187},
-        {label:"C6",e:6,  m:194},
-        {label:"C7",e:3,  m:197},
-        {label:"C8",e:2,  m:198},
+    /* 真实实验 2×体系（逐级稀释） */
+    const dil = [
+        {label:"C1", formula:"100µL 原液 + 100µL 培养基"},
+        {label:"C2", formula:"从 C1 取 100µL + 100µL 培养基"},
+        {label:"C3", formula:"从 C2 取 100µL + 100µL 培养基"},
+        {label:"C4", formula:"从 C3 取 100µL + 100µL 培养基"},
+        {label:"C5", formula:"从 C4 取 100µL + 100µL 培养基"},
+        {label:"C6", formula:"从 C5 取 100µL + 100µL 培养基"},
+        {label:"C7", formula:"从 C6 取 100µL + 100µL 培养基"},
+        {label:"C8", formula:"从 C7 取 100µL + 100µL 培养基"}
     ];
 
     let html=`<table><thead><tr><th>植物</th>`;
@@ -341,7 +364,7 @@ function renderMix(){
     plants.forEach(p=>{
         html+=`<tr><td>${p}</td>`;
         dil.forEach(d=>{
-            html+=`<td>${d.e}µL + ${d.m}µL</td>`;
+            html+=`<td>${d.formula}</td>`;
         });
         html+=`</tr>`;
     });
