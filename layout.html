@@ -11,7 +11,7 @@
 
 /* 页面整体 */
 body{
-    font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", 微软雅黑, sans-serif;
+    font-family:-apple-system, BlinkMacSystemFont,"Segoe UI",微软雅黑,sans-serif;
     background:#F5F7FA;
     margin:0;
     padding:0;
@@ -43,15 +43,15 @@ h2{
     margin-top:25px;
 }
 
-/* 平板区域 */
+/* ========= 抑菌圈部分 ========= */
+
 .plate-grid{
     display:grid;
-    grid-template-columns:repeat(auto-fill, minmax(260px,1fr));
+    grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
     gap:25px;
     margin-bottom:40px;
 }
 
-/* 3D 培养皿 */
 .plate-box{
     perspective:1200px;
 }
@@ -72,19 +72,17 @@ h2{
     box-shadow:0 20px 40px rgba(0,0,0,0.25);
 }
 
-/* 培养皿标题 */
 .plate-title{
     text-align:center;
     font-weight:600;
     margin-bottom:6px;
 }
 
-/* 2×2 孔 */
 .well{
     width:88px;
     height:88px;
     border-radius:50%;
-    background:#ffebee; /* 默认红色（未加样） */
+    background:#ffebee;
     border:2px solid #b71c1c;
     color:#333;
     position:absolute;
@@ -97,30 +95,73 @@ h2{
     cursor:pointer;
     transition:0.25s;
 }
-
-/* 加样后绿色 */
 .well.active{
     background:#e8f5e9;
     border-color:#1b5e20;
 }
 
-/* 孔位置 */
 .well.tl{ top:20px; left:20px; }
 .well.tr{ top:20px; right:20px; }
 .well.bl{ bottom:20px; left:20px; }
 .well.br{ bottom:20px; right:20px; }
 
-table{
-    border-collapse:collapse;
-    width:100%;
-    margin:20px 0;
+/* ========= 96孔 MIC 圆孔布局 ========= */
+
+.mic-plate{
+    display:inline-grid;
+    grid-template-columns:repeat(12, 30px);
+    gap:8px;
+    background:white;
+    padding:20px;
+    border-radius:16px;
+    margin-bottom:40px;
+    box-shadow:0 4px 15px rgba(0,0,0,0.1);
 }
-table th, table td{
+
+.mic-well{
+    width:28px;
+    height:28px;
+    border-radius:50%;
+    background:#ffebee;
+    border:2px solid #b71c1c;
+    cursor:pointer;
+    position:relative;
+    transition:0.2s;
+}
+
+.mic-well.active{
+    background:#e8f5e9;
+    border-color:#1b5e20;
+}
+
+/* 悬浮提示 */
+.mic-well:hover::after{
+    content:attr(data-info);
+    position:absolute;
+    top:-32px;
+    left:50%;
+    transform:translateX(-50%);
+    padding:4px 8px;
+    background:#263238;
+    color:white;
+    font-size:11px;
+    border-radius:4px;
+    white-space:nowrap;
+    pointer-events:none;
+}
+
+/* 自动配液表 */
+table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:20px;
+}
+th,td{
     border:1px solid #DDD;
     padding:6px 8px;
     text-align:center;
 }
-table th{
+th{
     background:#E8F5E9;
 }
 </style>
@@ -141,31 +182,30 @@ table th{
 
 <main style="max-width:1100px;margin:auto;padding:20px;">
 
-<!-- ========================== 1. 抑菌圈布局 ========================== -->
-<h2>⭕ 抑菌圈圆形平板布局（可点击标记是否加样）</h2>
+<!-- ========================================================= -->
+<!-- 1. 抑菌圈布局 -->
+<!-- ========================================================= -->
+<h2>⭕ 抑菌圈圆形平板布局（可点击标记）</h2>
 <div id="plateArea"></div>
 
 <script>
-const strains = ["EC","BS","AS","PS"];
-const plants = ["薄荷","迷迭香","柠檬皮","橙子皮","桑叶","枇杷叶","绿茶","干槐花","芦荟"];
-const repeats = ["R1","R2","R3"];
+const strains=["EC","BS","AS","PS"];
+const plants=["薄荷","迷迭香","柠檬皮","橙子皮","桑叶","枇杷叶","绿茶","干槐花","芦荟"];
+const repeats=["R1","R2","R3"];
 
-const LS_KEY = "PLATE_WELL_STATE";
-let wellState = JSON.parse(localStorage.getItem(LS_KEY) || "{}");
+const LS_KEY="PLATE_WELL_STATE";
+let wellState=JSON.parse(localStorage.getItem(LS_KEY)||"{}");
 
-function saveState(){
-    localStorage.setItem(LS_KEY, JSON.stringify(wellState));
-}
-
+function saveState(){ localStorage.setItem(LS_KEY,JSON.stringify(wellState)); }
 function toggleWell(id){
-    wellState[id] = !wellState[id];
+    wellState[id]=!wellState[id];
     saveState();
     document.getElementById(id).classList.toggle("active");
 }
 
 function renderWell(strain,i,pos,label){
-    const id = `${strain}_${i}_${pos}`;
-    const active = wellState[id] ? "active" : "";
+    const id=`${strain}_${i}_${pos}`;
+    const active=wellState[id]?"active":"";
     return `<div id="${id}" class="well ${pos} ${active}" onclick="toggleWell('${id}')">${label}</div>`;
 }
 
@@ -173,28 +213,27 @@ function renderPlates(){
     let html="";
 
     strains.forEach(strain=>{
-        html += `<h3>菌株：${strain}</h3>`;
-        html += `<div class="plate-grid">`;
+        html+=`<h3>菌株：${strain}</h3><div class="plate-grid">`;
 
         let ptr=0, rpt=0;
 
         for(let i=1;i<=8;i++){
             if(i===8){
                 html+=`
-                    <div class="plate-box">
-                        <div class="plate-title">${strain}-${i}（对照）</div>
-                        <div class="plate">
-                            ${renderWell(strain,i,"tl","阴性")}
-                            ${renderWell(strain,i,"tr","阳性")}
-                            ${renderWell(strain,i,"bl","空白")}
-                            ${renderWell(strain,i,"br","空白")}
-                        </div>
-                    </div>`;
+                <div class="plate-box">
+                    <div class="plate-title">${strain}-${i}（对照）</div>
+                    <div class="plate">
+                        ${renderWell(strain,i,"tl","阴性")}
+                        ${renderWell(strain,i,"tr","阳性")}
+                        ${renderWell(strain,i,"bl","空白")}
+                        ${renderWell(strain,i,"br","空白")}
+                    </div>
+                </div>`;
                 continue;
             }
 
-            const wells=[];
-            for(let w=0; w<4; w++){
+            let wells=[];
+            for(let w=0;w<4;w++){
                 if(ptr>=plants.length){ ptr=0; rpt++; }
                 wells.push(plants[ptr]+"-"+repeats[rpt]);
                 ptr++;
@@ -212,81 +251,103 @@ function renderPlates(){
             </div>`;
         }
 
-        html += `</div>`;
+        html+="</div>";
     });
 
-    document.getElementById("plateArea").innerHTML = html;
+    document.getElementById("plateArea").innerHTML=html;
 }
 renderPlates();
 </script>
 
-<!-- ========================== 2. MIC 布局 ========================== -->
-<h2>96 孔 MIC 布局（自动生成）</h2>
+
+<!-- ========================================================= -->
+<!-- 2. 96 孔 MIC 布局 -->
+<!-- ========================================================= -->
+<h2>96 孔 MIC 布局（可点击标记）</h2>
 <div id="micArea"></div>
 
 <script>
-function renderMIC(){
+const micLSKey="MIC_WELL_STATE";
+let micState=JSON.parse(localStorage.getItem(micLSKey)||"{}");
+function saveMIC(){ localStorage.setItem(micLSKey,JSON.stringify(micState)); }
+
+function toggleMicWell(id){
+    micState[id]=!micState[id];
+    saveMIC();
+    document.getElementById(id).classList.toggle("active");
+}
+
+function renderMIC96(){
     let html="";
 
     strains.forEach(strain=>{
-        html += `<h3 style="margin:20px 0 10px;">菌株：${strain}</h3>`;
-        html += `<table><thead><tr><th>Row</th>${Array.from({length:12},(_,i)=>`<th>${i+1}</th>`).join("")}</tr></thead><tbody>`;
+        html+=`<h3 style="margin-top:20px;">菌株：${strain}（96 孔板）</h3>`;
+        html+=`<div class="mic-plate">`;
 
-        const rows=["A","B","C","D","E"];
-        
-        for(let block=0; block<2; block++){
-            rows.forEach((row,rIndex)=>{
-                const plant = plants[rIndex + block*5];
-                html += `<tr><td>${row}</td>`;
+        const rows=["A","B","C","D","E","F","G","H"];
 
-                for(let c=1;c<=8;c++){
-                    html += `<td>${plant}_C${c}</td>`;
+        rows.forEach((row,rIndex)=>{
+            for(let col=1;col<=12;col++){
+                const id=`${strain}_${row}${col}`;
+                let info="", activeClass=micState[id]?"active":"";
+
+                if(col<=8){
+                    info=`${plants[rIndex]} - C${col}`;
+                }else{
+                    info=["空白","生长对照","溶剂对照","阳性药"][col-9];
                 }
 
-                html += `<td>空白</td><td>生长对照</td><td>溶剂对照</td><td>阳性药</td>`;
-                html += `</tr>`;
-            });
-        }
+                html+=`
+                <div id="${id}"
+                     class="mic-well ${activeClass}"
+                     onclick="toggleMicWell('${id}')"
+                     data-info="${info}">
+                </div>`;
+            }
+        });
 
-        html += `</tbody></table>`;
+        html+=`</div>`;
     });
 
-    document.getElementById("micArea").innerHTML = html;
+    document.getElementById("micArea").innerHTML=html;
 }
-renderMIC();
+renderMIC96();
 </script>
 
-<!-- ========================== 3. MIC 自动配液表 ========================== -->
-<h2>MIC 自动配液表（2× 稀释体系）</h2>
+
+<!-- ========================================================= -->
+<!-- 3. MIC 自动配液表 -->
+<!-- ========================================================= -->
+<h2>MIC 自动配液表（2×稀释体系）</h2>
 <div id="mixTable"></div>
 
 <script>
 function renderMix(){
-    const dil = [
-        {label:"C1", e:200, m:0},
-        {label:"C2", e:100, m:100},
-        {label:"C3", e:50,  m:150},
-        {label:"C4", e:25,  m:175},
-        {label:"C5", e:13,  m:187},
-        {label:"C6", e:6,   m:194},
-        {label:"C7", e:3,   m:197},
-        {label:"C8", e:2,   m:198},
+    const dil=[
+        {label:"C1",e:200,m:0},
+        {label:"C2",e:100,m:100},
+        {label:"C3",e:50, m:150},
+        {label:"C4",e:25, m:175},
+        {label:"C5",e:13, m:187},
+        {label:"C6",e:6,  m:194},
+        {label:"C7",e:3,  m:197},
+        {label:"C8",e:2,  m:198},
     ];
 
-    let html = `<table><thead><tr><th>植物</th>`;
+    let html=`<table><thead><tr><th>植物</th>`;
     dil.forEach(d=> html+=`<th>${d.label}</th>`);
-    html += `</tr></thead><tbody>`;
+    html+=`</tr></thead><tbody>`;
 
     plants.forEach(p=>{
-        html += `<tr><td>${p}</td>`;
+        html+=`<tr><td>${p}</td>`;
         dil.forEach(d=>{
-            html += `<td>${d.e}µL + ${d.m}µL</td>`;
+            html+=`<td>${d.e}µL + ${d.m}µL</td>`;
         });
-        html += `</tr>`;
+        html+=`</tr>`;
     });
 
-    html += "</tbody></table>";
-    document.getElementById("mixTable").innerHTML = html;
+    html+=`</tbody></table>`;
+    document.getElementById("mixTable").innerHTML=html;
 }
 renderMix();
 </script>
